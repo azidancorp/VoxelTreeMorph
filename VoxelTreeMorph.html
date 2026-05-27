@@ -379,6 +379,7 @@
     <button type="button" data-variation="5">Fruit</button>
     <button type="button" data-variation="6">Baobab</button>
     <button type="button" data-variation="7">Mangrove</button>
+    <button type="button" data-variation="8">Jacaranda</button>
   </nav>
 
   <script type="module">
@@ -517,6 +518,7 @@
     variations[5] = makeFruitMap();
     variations[6] = makeBaobabMap();
     variations[7] = makeMangroveMap();
+    variations[8] = makeJacarandaMap();
 
     const cube = new THREE.BoxGeometry(1, 1, 1);
     const material = new THREE.MeshStandardMaterial({
@@ -603,7 +605,7 @@
       hoverForce: 8.6,
       go: (index) => startMorph((index + variations.length) % variations.length),
       next: () => {
-        const order = [3, 0, 1, 2, 4, 5, 6, 7];
+        const order = [3, 0, 1, 2, 8, 4, 5, 6, 7];
         const next = order[(order.indexOf(activeVariation) + 1) % order.length];
         startMorph(next);
       },
@@ -1337,6 +1339,117 @@
       });
     }
 
+    function makeJacarandaMap() {
+      const bloomDeep = ["#5c2c91", "#6733a5", "#7240b8", "#4f267f", "#7b4ac2"];
+      const bloomMid = ["#8d5ce0", "#9867ea", "#a879f0", "#9060d8", "#b184f4", "#7f52cc"];
+      const bloomPale = ["#c7a6ff", "#d2b8ff", "#bfa0f3", "#e0ccff", "#b994ee"];
+      const leafGreen = ["#2f6b3c", "#357a43", "#286034", "#40804a", "#4c8d55"];
+      const bark = ["#4a392e", "#5a4638", "#3e3028", "#6a5444", "#564235", "#332820"];
+      const barkLight = ["#806858", "#907565", "#715c4e", "#9a8070"];
+      const grass = ["#2e7a3b", "#3c8a45", "#4a984e", "#236a34", "#5aa65a"];
+      const soil = ["#3a2a1d", "#4c3422", "#2d2118", "#5a3d28", "#463020"];
+      const lavender = ["#9a6be8", "#b08af5", "#7b4cc4", "#c3a5ff"];
+
+      const trunkPath = [
+        [0, 4.2, 0],
+        [-0.4, 7.2, 0.1],
+        [0.2, 10.0, -0.1],
+        [0.9, 12.8, 0.2],
+        [0.4, 15.2, 0]
+      ];
+
+      const branches = [
+        { angle: -2.8, start: 0.34, length: 7.0, lift: 1.9 },
+        { angle: -2.05, start: 0.45, length: 5.8, lift: 2.8 },
+        { angle: -1.18, start: 0.58, length: 6.6, lift: 2.3 },
+        { angle: -0.38, start: 0.42, length: 7.7, lift: 1.6 },
+        { angle: 0.55, start: 0.52, length: 6.4, lift: 2.4 },
+        { angle: 1.38, start: 0.37, length: 7.2, lift: 1.8 },
+        { angle: 2.28, start: 0.62, length: 5.6, lift: 2.5 }
+      ];
+
+      const blossomClusters = branches.flatMap((branch, i) => {
+        const base = samplePath(trunkPath, branch.start);
+        return [0.72, 0.93].map((along, j) => {
+          const sway = Math.sin(i * 1.7 + j) * 0.85;
+          return {
+            x: base.x + Math.cos(branch.angle) * branch.length * along + Math.cos(branch.angle + Math.PI / 2) * sway,
+            y: base.y + branch.lift * along + Math.sin(along * Math.PI) * 1.2 + j * 0.45,
+            z: base.z + Math.sin(branch.angle) * branch.length * along + Math.sin(branch.angle + Math.PI / 2) * sway,
+            rx: 1.6 + (i % 3) * 0.35,
+            ry: 1.0 + j * 0.25,
+            rz: 1.45 + ((i + j) % 3) * 0.32
+          };
+        });
+      });
+      blossomClusters.push({ x: 0.2, y: 17.7, z: -0.3, rx: 2.0, ry: 1.15, rz: 1.9 });
+
+      return makeMap((voxel) => {
+        const p = voxel.base.clone();
+        let color = voxel.color.clone();
+        if (voxel.role === "leaf") {
+          const s = voxel.seed;
+          if (s < 0.24) {
+            const branch = branches[Math.floor(s * branches.length * 4.17) % branches.length];
+            const along = (s * 29.7 + p.y * 0.037 + Math.abs(p.x) * 0.021) % 1;
+            const base = samplePath(trunkPath, branch.start);
+            const taper = 0.42 * (1 - along) + 0.12;
+            const side = Math.sin(s * 80.0) * taper;
+            p.x = base.x + Math.cos(branch.angle) * branch.length * along + Math.cos(branch.angle + Math.PI / 2) * side + (rng() - 0.5) * taper;
+            p.z = base.z + Math.sin(branch.angle) * branch.length * along + Math.sin(branch.angle + Math.PI / 2) * side + (rng() - 0.5) * taper;
+            p.y = base.y + branch.lift * along + Math.sin(along * Math.PI) * 1.4 + (rng() - 0.5) * taper;
+            color = new THREE.Color(pick(rng() < 0.24 ? barkLight : bark));
+          } else {
+            const cluster = blossomClusters[Math.floor((s * 97.0 + p.x * 0.19 + p.z * 0.13) % blossomClusters.length)];
+            const a = s * Math.PI * 17.0 + p.x * 0.31;
+            const r = Math.sqrt((s * 13.7 + Math.abs(p.z) * 0.07) % 1);
+            const vertical = Math.sin(s * Math.PI * 23.0 + p.y) * 0.8;
+            p.x = cluster.x + Math.cos(a) * r * cluster.rx + (rng() - 0.5) * 0.38;
+            p.z = cluster.z + Math.sin(a) * r * cluster.rz + (rng() - 0.5) * 0.38;
+            p.y = cluster.y + vertical * cluster.ry + (rng() - 0.5) * 0.32;
+            if (s > 0.86 && rng() < 0.7) {
+              p.x += (rng() - 0.5) * 1.8;
+              p.z += (rng() - 0.5) * 1.8;
+              color = new THREE.Color(pick(leafGreen));
+            } else {
+              const palette = s > 0.68 ? bloomPale : s > 0.42 ? bloomMid : bloomDeep;
+              color = new THREE.Color(pick(palette));
+            }
+          }
+        } else if (voxel.role === "trunk") {
+          const t = clamp((p.y - 5) / 9);
+          const curve = samplePath(trunkPath, t);
+          const ring = Math.atan2(p.z, Math.abs(p.x) > 0.01 ? p.x : 0.01);
+          const thick = 1.18 - t * 0.38;
+          p.x = curve.x + Math.cos(ring) * thick + (rng() - 0.5) * 0.15;
+          p.z = curve.z + Math.sin(ring) * thick + (rng() - 0.5) * 0.15;
+          p.y = curve.y + (rng() - 0.5) * 0.22;
+          color = new THREE.Color(pick(Math.cos(ring) > 0.18 ? barkLight : bark));
+        } else if (voxel.role === "grass" || voxel.role === "grassTuft") {
+          p.x *= 1.08;
+          p.z *= 1.08;
+          p.y = Math.max(0, p.y) * 0.48;
+          color = new THREE.Color(pick(grass));
+        } else if (voxel.role === "underside") {
+          p.x *= 1.02;
+          p.z *= 1.02;
+          p.y *= 0.62;
+          color = new THREE.Color(pick(soil));
+        } else if (voxel.role === "rock") {
+          color = new THREE.Color(pick(soil)).multiplyScalar(0.88);
+        } else if (voxel.role === "flower" || voxel.role === "mushroom") {
+          const cluster = blossomClusters[Math.floor(voxel.seed * blossomClusters.length) % blossomClusters.length];
+          const a = rng() * Math.PI * 2;
+          const r = Math.sqrt(rng());
+          p.x = cluster.x + Math.cos(a) * r * cluster.rx * 0.8;
+          p.z = cluster.z + Math.sin(a) * r * cluster.rz * 0.8;
+          p.y = cluster.y + (rng() - 0.5) * cluster.ry * 1.5;
+          color = new THREE.Color(pick(lavender));
+        }
+        return [p, color];
+      });
+    }
+
     function makeMap(transform) {
       const positions = new Array(voxels.length);
       const colors = new Array(voxels.length);
@@ -1412,7 +1525,7 @@
         return;
       }
       if (now - lastMorphAt >= settings.cycleMs) {
-        const order = [3, 0, 1, 2, 4, 5, 6, 7];
+        const order = [3, 0, 1, 2, 8, 4, 5, 6, 7];
         const next = order[(order.indexOf(activeVariation) + 1) % order.length];
         startMorph(next);
       }
@@ -1543,7 +1656,8 @@
         ["#2f7a36", "#54a04a", "#7ec06a", "#a8d068", "#388540", "#62b058"],
         ["#1b5028", "#143f20", "#d92d1a", "#ff8418", "#f5c518", "#205830"],
         ["#a87858", "#7a9a65", "#c8a050", "#ff9050", "#6a8a55", "#b88868"],
-        ["#2e6e34", "#358040", "#5a9a52", "#1a3e22", "#7ac070", "#4a9ec0"]
+        ["#2e6e34", "#358040", "#5a9a52", "#1a3e22", "#7ac070", "#4a9ec0"],
+        ["#7b4cc4", "#9867ea", "#b184f4", "#c7a6ff", "#5c2c91", "#357a43"]
       ];
       for (let i = 0; i < leafMax; i++) {
         resetLeaf(i, rng() * 6);
