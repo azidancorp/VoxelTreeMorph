@@ -10,6 +10,26 @@
       color-scheme: dark;
       --film-w: 552;
       --film-h: 720;
+      --body-background: #050403;
+      --stage-background:
+        radial-gradient(circle at 50% 48%, rgba(116, 73, 43, 0.32), rgba(34, 20, 11, 0.38) 39%, rgba(6, 4, 2, 0.98) 78%),
+        #050403;
+      --stage-overlay:
+        radial-gradient(circle at 50% 45%, transparent 0 43%, rgba(0, 0, 0, 0.05) 68%, rgba(0, 0, 0, 0.34) 100%),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.12), transparent 21%, transparent 79%, rgba(0, 0, 0, 0.16));
+      --grain-opacity: 0.075;
+      --ui-panel-bg: rgba(12, 8, 5, 0.6);
+      --ui-hover-bg: rgba(80, 50, 28, 0.7);
+      --ui-button-bg: rgba(40, 26, 16, 0.55);
+      --ui-border: rgba(220, 180, 130, 0.18);
+      --ui-button-border: rgba(220, 180, 130, 0.22);
+      --ui-border-active: rgba(255, 220, 170, 0.6);
+      --ui-text: #e8d2b0;
+      --ui-muted: #d4a874;
+      --ui-accent: #ffb766;
+      --ui-accent-strong: #d97a30;
+      --ui-accent-dark: #1a0f06;
+      --ui-glow: rgba(255, 140, 60, 0.45);
     }
 
     * {
@@ -22,7 +42,7 @@
       height: 100%;
       margin: 0;
       overflow: hidden;
-      background: #050403;
+      background: var(--body-background);
       font-family: system-ui, sans-serif;
     }
 
@@ -38,9 +58,7 @@
       height: 100%;
       overflow: hidden;
       isolation: isolate;
-      background:
-        radial-gradient(circle at 50% 48%, rgba(116, 73, 43, 0.32), rgba(34, 20, 11, 0.38) 39%, rgba(6, 4, 2, 0.98) 78%),
-        #050403;
+      background: var(--stage-background);
       cursor: crosshair;
     }
 
@@ -50,9 +68,7 @@
       inset: 0;
       z-index: 4;
       pointer-events: none;
-      background:
-        radial-gradient(circle at 50% 45%, transparent 0 43%, rgba(0, 0, 0, 0.05) 68%, rgba(0, 0, 0, 0.34) 100%),
-        linear-gradient(90deg, rgba(0, 0, 0, 0.12), transparent 21%, transparent 79%, rgba(0, 0, 0, 0.16));
+      background: var(--stage-overlay);
     }
 
     canvas {
@@ -66,7 +82,7 @@
       inset: -3%;
       z-index: 5;
       pointer-events: none;
-      opacity: 0.075;
+      opacity: var(--grain-opacity);
       background-image:
         radial-gradient(circle at 10% 20%, #fff 0 0.5px, transparent 0.8px),
         radial-gradient(circle at 70% 40%, #fff 0 0.45px, transparent 0.75px),
@@ -82,8 +98,8 @@
       display: grid;
       place-items: center;
       padding: 32px;
-      background: #050403;
-      color: #d7c1a2;
+      background: var(--body-background);
+      color: var(--ui-text);
       text-align: center;
       line-height: 1.45;
       visibility: hidden;
@@ -108,10 +124,10 @@
       gap: 8px;
       padding: 14px;
       border-radius: 6px;
-      background: rgba(12, 8, 5, 0.6);
+      background: var(--ui-panel-bg);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
-      border: 1px solid rgba(220, 180, 130, 0.18);
+      border: 1px solid var(--ui-border);
       box-shadow: 0 6px 30px rgba(0, 0, 0, 0.4);
       font-size: 13px;
       letter-spacing: 0.04em;
@@ -122,9 +138,9 @@
 
     #picker button {
       appearance: none;
-      border: 1px solid rgba(220, 180, 130, 0.22);
-      background: rgba(40, 26, 16, 0.55);
-      color: #e8d2b0;
+      border: 1px solid var(--ui-button-border);
+      background: var(--ui-button-bg);
+      color: var(--ui-text);
       padding: 8px 16px;
       border-radius: 4px;
       cursor: pointer;
@@ -134,8 +150,8 @@
     }
 
     #picker button:hover {
-      background: rgba(80, 50, 28, 0.7);
-      border-color: rgba(255, 200, 140, 0.45);
+      background: var(--ui-hover-bg);
+      border-color: var(--ui-accent);
     }
 
     #picker button:active {
@@ -143,10 +159,10 @@
     }
 
     #picker button.active {
-      background: linear-gradient(180deg, #ffb766, #d97a30);
-      color: #1a0f06;
-      border-color: rgba(255, 220, 170, 0.6);
-      box-shadow: 0 0 12px rgba(255, 140, 60, 0.45);
+      background: linear-gradient(180deg, var(--ui-accent), var(--ui-accent-strong));
+      color: var(--ui-accent-dark);
+      border-color: var(--ui-border-active);
+      box-shadow: 0 0 12px var(--ui-glow);
     }
 
     #repo-link {
@@ -159,9 +175,9 @@
       min-height: 38px;
       padding: 0 16px;
       border-radius: 6px;
-      border: 1px solid rgba(220, 180, 130, 0.22);
-      background: rgba(12, 8, 5, 0.6);
-      color: #e8d2b0;
+      border: 1px solid var(--ui-button-border);
+      background: var(--ui-panel-bg);
+      color: var(--ui-text);
       text-decoration: none;
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
@@ -172,8 +188,8 @@
     }
 
     #repo-link:hover {
-      background: rgba(80, 50, 28, 0.7);
-      border-color: rgba(255, 200, 140, 0.45);
+      background: var(--ui-hover-bg);
+      border-color: var(--ui-accent);
     }
 
     #repo-link:active {
@@ -181,7 +197,7 @@
     }
 
     #repo-link:focus-visible {
-      outline: 2px solid #ffb766;
+      outline: 2px solid var(--ui-accent);
       outline-offset: 3px;
     }
 
@@ -195,17 +211,17 @@
       gap: 10px;
       padding: 14px 16px;
       border-radius: 6px;
-      background: rgba(12, 8, 5, 0.6);
+      background: var(--ui-panel-bg);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
-      border: 1px solid rgba(220, 180, 130, 0.18);
+      border: 1px solid var(--ui-border);
       box-shadow: 0 6px 30px rgba(0, 0, 0, 0.4);
       font-size: 12px;
       letter-spacing: 0.04em;
       width: 220px;
       max-height: calc(100vh - 44px);
       overflow-y: auto;
-      color: #e8d2b0;
+      color: var(--ui-text);
     }
 
     #settings h3 {
@@ -214,7 +230,7 @@
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.12em;
-      color: #d4a874;
+      color: var(--ui-muted);
       opacity: 0.85;
     }
 
@@ -233,7 +249,7 @@
     }
 
     #settings .row span:last-child {
-      color: #ffb766;
+      color: var(--ui-accent);
       font-variant-numeric: tabular-nums;
       font-size: 11px;
     }
@@ -242,7 +258,7 @@
       appearance: none;
       width: 100%;
       height: 4px;
-      background: rgba(220, 180, 130, 0.22);
+      background: var(--ui-button-border);
       border-radius: 2px;
       outline: none;
       margin: 0;
@@ -253,20 +269,20 @@
       width: 12px;
       height: 12px;
       border-radius: 50%;
-      background: linear-gradient(180deg, #ffb766, #d97a30);
-      border: 1px solid rgba(255, 220, 170, 0.7);
+      background: linear-gradient(180deg, var(--ui-accent), var(--ui-accent-strong));
+      border: 1px solid var(--ui-border-active);
       cursor: pointer;
-      box-shadow: 0 0 6px rgba(255, 140, 60, 0.45);
+      box-shadow: 0 0 6px var(--ui-glow);
     }
 
     #settings input[type="range"]::-moz-range-thumb {
       width: 12px;
       height: 12px;
       border-radius: 50%;
-      background: linear-gradient(180deg, #ffb766, #d97a30);
-      border: 1px solid rgba(255, 220, 170, 0.7);
+      background: linear-gradient(180deg, var(--ui-accent), var(--ui-accent-strong));
+      border: 1px solid var(--ui-border-active);
       cursor: pointer;
-      box-shadow: 0 0 6px rgba(255, 140, 60, 0.45);
+      box-shadow: 0 0 6px var(--ui-glow);
     }
 
     #settings .toggle {
@@ -283,7 +299,7 @@
       width: 28px;
       height: 16px;
       border-radius: 8px;
-      background: rgba(220, 180, 130, 0.22);
+      background: var(--ui-button-border);
       position: relative;
       cursor: pointer;
       transition: background 160ms ease;
@@ -297,17 +313,17 @@
       width: 12px;
       height: 12px;
       border-radius: 50%;
-      background: #e8d2b0;
+      background: var(--ui-text);
       transition: left 160ms ease, background 160ms ease;
     }
 
     #settings .toggle input:checked {
-      background: linear-gradient(180deg, #ffb766, #d97a30);
+      background: linear-gradient(180deg, var(--ui-accent), var(--ui-accent-strong));
     }
 
     #settings .toggle input:checked::after {
       left: 14px;
-      background: #1a0f06;
+      background: var(--ui-accent-dark);
     }
   </style>
   <script type="importmap">
@@ -373,21 +389,7 @@
     </label>
   </section>
 
-  <nav id="picker" aria-label="tree variation picker">
-    <button type="button" data-variation="0">Maple</button>
-    <button type="button" data-variation="1">Winter</button>
-    <button type="button" data-variation="2">Sakura</button>
-    <button type="button" data-variation="3">Bonsai</button>
-    <button type="button" data-variation="4">Oak</button>
-    <button type="button" data-variation="5">Fruit</button>
-    <button type="button" data-variation="6">Baobab</button>
-    <button type="button" data-variation="7">Mangrove</button>
-    <button type="button" data-variation="8">Jacaranda</button>
-    <button type="button" data-variation="9">Banyan</button>
-    <button type="button" data-variation="10">Banana</button>
-    <button type="button" data-variation="11">Date Palm</button>
-    <button type="button" data-variation="12">Weeping Willow</button>
-  </nav>
+  <nav id="picker" aria-label="tree variation picker"></nav>
 
   <script type="module">
     import * as THREE from "three";
@@ -405,6 +407,504 @@
       autoMorph: true
     };
 
+    const DEFAULT_CAMERA_FRAME = {
+      fov: 40,
+      near: 1,
+      far: 90,
+      position: [14, 13, 30],
+      target: [0, 3.2, 0],
+      minDistance: 13,
+      maxDistance: 36,
+      rootPosition: [0.1, -0.6, 0],
+      rootRotationY: -0.32,
+      rootScale: 0.55,
+      floatAmplitude: 0.035
+    };
+
+    const DEFAULT_UI_ACCENT = {
+      panel: "rgba(12, 8, 5, 0.6)",
+      hover: "rgba(80, 50, 28, 0.7)",
+      button: "rgba(40, 26, 16, 0.55)",
+      border: "rgba(220, 180, 130, 0.18)",
+      buttonBorder: "rgba(220, 180, 130, 0.22)",
+      borderActive: "rgba(255, 220, 170, 0.6)",
+      text: "#e8d2b0",
+      muted: "#d4a874",
+      accent: "#ffb766",
+      strong: "#d97a30",
+      dark: "#1a0f06",
+      glow: "rgba(255, 140, 60, 0.45)"
+    };
+
+    const DEFAULT_LIGHTING = {
+      hemisphere: { sky: "#ffd8a8", ground: "#1b0f08", intensity: 1.05 },
+      ambient: { color: "#ffc090", intensity: 0.48 },
+      key: { color: "#ffd0a0", intensity: 4.2, position: [5.6, 14, 5.4] },
+      fill: { color: "#6d9a58", intensity: 1.0, position: [-5, 8, -3] },
+      rim: {
+        color: "#ff6f35",
+        intensity: 4.2,
+        distance: 28,
+        decay: 1.6,
+        position: [-4, 9, -5],
+        pulseBase: 2.6,
+        pulseAmount: 0.35,
+        pulseSpeed: 0.7,
+        pulseOffset: 0,
+        hoverBoost: 0.45
+      },
+      accent: {
+        color: "#ff9c5a",
+        intensity: 3.3,
+        distance: 22,
+        decay: 1.6,
+        position: [4, 8, 4],
+        pulseBase: 2.1,
+        pulseAmount: 0.3,
+        pulseSpeed: 0.53,
+        pulseOffset: 1,
+        hoverBoost: 0
+      }
+    };
+
+    const DEFAULT_SCENE_STYLE = {
+      clear: "#050403",
+      background: "radial-gradient(circle at 50% 48%, rgba(116, 73, 43, 0.32), rgba(34, 20, 11, 0.38) 39%, rgba(6, 4, 2, 0.98) 78%), #050403",
+      overlay: "radial-gradient(circle at 50% 45%, transparent 0 43%, rgba(0, 0, 0, 0.05) 68%, rgba(0, 0, 0, 0.34) 100%), linear-gradient(90deg, rgba(0, 0, 0, 0.12), transparent 21%, transparent 79%, rgba(0, 0, 0, 0.16))",
+      grainOpacity: 0.075,
+      fog: { color: "#100906", density: 0.019 },
+      lighting: DEFAULT_LIGHTING
+    };
+
+    function makeTreeVariation(config) {
+      const sceneStyle = config.scene || {};
+      const lighting = sceneStyle.lighting || {};
+      return {
+        ...config,
+        camera: { ...DEFAULT_CAMERA_FRAME, ...(config.camera || {}) },
+        uiAccent: { ...DEFAULT_UI_ACCENT, ...(config.uiAccent || {}) },
+        scene: {
+          ...DEFAULT_SCENE_STYLE,
+          ...sceneStyle,
+          fog: { ...DEFAULT_SCENE_STYLE.fog, ...(sceneStyle.fog || {}) },
+          lighting: {
+            hemisphere: { ...DEFAULT_LIGHTING.hemisphere, ...(lighting.hemisphere || {}) },
+            ambient: { ...DEFAULT_LIGHTING.ambient, ...(lighting.ambient || {}) },
+            key: { ...DEFAULT_LIGHTING.key, ...(lighting.key || {}) },
+            fill: { ...DEFAULT_LIGHTING.fill, ...(lighting.fill || {}) },
+            rim: { ...DEFAULT_LIGHTING.rim, ...(lighting.rim || {}) },
+            accent: { ...DEFAULT_LIGHTING.accent, ...(lighting.accent || {}) }
+          }
+        }
+      };
+    }
+
+    const TREE_VARIATIONS = [
+      makeTreeVariation({
+        id: "maple",
+        label: "Maple",
+        map: makeAutumnMap,
+        cycleOrder: 1,
+        particlePalette: ["#e63c2e", "#d4452f", "#f05a3a", "#ff6b45", "#f5a623", "#ff8c42"],
+        camera: { distance: 31.1 },
+        uiAccent: {
+          accent: "#ffb766",
+          strong: "#d97a30",
+          muted: "#d4a874",
+          glow: "rgba(255, 140, 60, 0.45)"
+        },
+        scene: {
+          clear: "#050403",
+          background: "radial-gradient(circle at 50% 48%, rgba(116, 73, 43, 0.32), rgba(34, 20, 11, 0.38) 39%, rgba(6, 4, 2, 0.98) 78%), #050403",
+          fog: { color: "#100906", density: 0.019 },
+          lighting: {
+            key: { color: "#ffd0a0", intensity: 4.2 },
+            fill: { color: "#6d9a58", intensity: 1.0 },
+            rim: { color: "#ff6f35", pulseBase: 2.6 },
+            accent: { color: "#ff9c5a", pulseBase: 2.1 }
+          }
+        }
+      }),
+      makeTreeVariation({
+        id: "winter",
+        label: "Winter",
+        map: makeWinterMap,
+        cycleOrder: 2,
+        particlePalette: ["#1a4a2a", "#224e30", "#2a5a38", "#1e4828", "#164020", "#2e6e3e"],
+        camera: { position: [13, 14, 29], target: [0, 3.8, 0], rootScale: 0.56 },
+        uiAccent: {
+          panel: "rgba(7, 13, 16, 0.62)",
+          hover: "rgba(26, 58, 66, 0.72)",
+          button: "rgba(17, 37, 42, 0.58)",
+          border: "rgba(190, 230, 235, 0.2)",
+          buttonBorder: "rgba(190, 230, 235, 0.24)",
+          borderActive: "rgba(226, 255, 255, 0.64)",
+          text: "#dcefed",
+          muted: "#a6cfcb",
+          accent: "#dceadc",
+          strong: "#8fc7c0",
+          dark: "#071012",
+          glow: "rgba(190, 242, 235, 0.38)"
+        },
+        scene: {
+          clear: "#04090a",
+          background: "radial-gradient(circle at 48% 45%, rgba(122, 164, 154, 0.26), rgba(23, 47, 46, 0.4) 42%, rgba(3, 8, 9, 0.98) 78%), #04090a",
+          fog: { color: "#102124", density: 0.022 },
+          lighting: {
+            hemisphere: { sky: "#ecfff8", ground: "#102a2a", intensity: 1.12 },
+            ambient: { color: "#c8e8e2", intensity: 0.42 },
+            key: { color: "#e9fff4", intensity: 3.9, position: [4.8, 15, 4.8] },
+            fill: { color: "#80b3c5", intensity: 1.1 },
+            rim: { color: "#dff6ef", pulseBase: 2.3, pulseAmount: 0.28 },
+            accent: { color: "#8dc6d6", pulseBase: 1.8, pulseAmount: 0.24 }
+          }
+        }
+      }),
+      makeTreeVariation({
+        id: "sakura",
+        label: "Sakura",
+        map: makeBlossomMap,
+        cycleOrder: 3,
+        particlePalette: ["#ffb7c5", "#ff97b0", "#ffc8d6", "#fff0f5", "#ffd0db"],
+        camera: { position: [15, 12, 30], target: [0, 3.1, 0], rootScale: 0.56 },
+        uiAccent: {
+          panel: "rgba(30, 12, 20, 0.62)",
+          hover: "rgba(88, 40, 56, 0.72)",
+          button: "rgba(54, 24, 36, 0.58)",
+          border: "rgba(255, 183, 197, 0.2)",
+          buttonBorder: "rgba(255, 183, 197, 0.25)",
+          borderActive: "rgba(255, 224, 232, 0.66)",
+          text: "#ffe8ef",
+          muted: "#ffabc0",
+          accent: "#ffc8d6",
+          strong: "#ff85a0",
+          dark: "#260712",
+          glow: "rgba(255, 133, 160, 0.44)"
+        },
+        scene: {
+          clear: "#080407",
+          background: "radial-gradient(circle at 50% 45%, rgba(173, 82, 112, 0.32), rgba(56, 20, 32, 0.44) 42%, rgba(8, 4, 7, 0.98) 78%), #080407",
+          fog: { color: "#2a1019", density: 0.018 },
+          lighting: {
+            hemisphere: { sky: "#ffe4ec", ground: "#241019", intensity: 1.08 },
+            ambient: { color: "#ffc2d0", intensity: 0.48 },
+            key: { color: "#ffd4de", intensity: 4.0 },
+            fill: { color: "#7fd28e", intensity: 0.78 },
+            rim: { color: "#ff8fa8", pulseBase: 2.5 },
+            accent: { color: "#ffc0d0", pulseBase: 2.2 }
+          }
+        }
+      }),
+      makeTreeVariation({
+        id: "bonsai",
+        label: "Bonsai",
+        map: makeAncientMap,
+        cycleOrder: 0,
+        particlePalette: ["#456f3a", "#5a8845", "#3a5e30", "#9a5226", "#b04030", "#345532"],
+        camera: { position: [16, 13, 32], target: [0, 4.0, 0], minDistance: 14, maxDistance: 38, rootScale: 0.52 },
+        uiAccent: {
+          panel: "rgba(10, 13, 8, 0.64)",
+          hover: "rgba(48, 64, 35, 0.74)",
+          button: "rgba(26, 33, 21, 0.6)",
+          border: "rgba(163, 194, 103, 0.2)",
+          buttonBorder: "rgba(163, 194, 103, 0.25)",
+          borderActive: "rgba(219, 230, 150, 0.62)",
+          text: "#e5dfc2",
+          muted: "#a8bd73",
+          accent: "#a3c267",
+          strong: "#8a5226",
+          dark: "#111407",
+          glow: "rgba(163, 194, 103, 0.38)"
+        },
+        scene: {
+          clear: "#050604",
+          background: "radial-gradient(circle at 48% 48%, rgba(88, 112, 54, 0.28), rgba(38, 34, 22, 0.44) 43%, rgba(5, 6, 4, 0.98) 79%), #050604",
+          fog: { color: "#15160c", density: 0.018 },
+          lighting: {
+            hemisphere: { sky: "#e5d7a8", ground: "#11190d", intensity: 1.02 },
+            ambient: { color: "#c6b983", intensity: 0.43 },
+            key: { color: "#efd7a4", intensity: 3.8 },
+            fill: { color: "#6b9a58", intensity: 0.88 },
+            rim: { color: "#b04030", pulseBase: 2.2 },
+            accent: { color: "#9bc05e", pulseBase: 1.9 }
+          }
+        }
+      }),
+      makeTreeVariation({
+        id: "oak",
+        label: "Oak",
+        map: makeOakMap,
+        cycleOrder: 5,
+        particlePalette: ["#2f7a36", "#54a04a", "#7ec06a", "#a8d068", "#388540", "#62b058"],
+        camera: { position: [15, 13, 34], target: [0, 4.2, 0], distance: 34.4, maxDistance: 39, rootScale: 0.52 },
+        uiAccent: {
+          accent: "#a8d068",
+          strong: "#54a04a",
+          muted: "#9ec56d",
+          dark: "#071406",
+          glow: "rgba(168, 208, 104, 0.38)"
+        },
+        scene: {
+          clear: "#030604",
+          background: "radial-gradient(circle at 50% 47%, rgba(73, 124, 58, 0.28), rgba(28, 50, 24, 0.42) 42%, rgba(3, 6, 4, 0.98) 79%), #030604",
+          fog: { color: "#0c1609", density: 0.018 },
+          lighting: {
+            hemisphere: { sky: "#dff2b0", ground: "#101d0c", intensity: 1.05 },
+            ambient: { color: "#d5e5a0", intensity: 0.42 },
+            key: { color: "#f1dfaa", intensity: 4.0 },
+            fill: { color: "#5a9a52", intensity: 1.02 },
+            rim: { color: "#a8d068", pulseBase: 2.4 },
+            accent: { color: "#7ec06a", pulseBase: 2.0 }
+          }
+        }
+      }),
+      makeTreeVariation({
+        id: "fruit",
+        label: "Fruit",
+        map: makeFruitMap,
+        cycleOrder: 6,
+        particlePalette: ["#1b5028", "#143f20", "#d92d1a", "#ff8418", "#f5c518", "#205830"],
+        camera: { position: [14, 13, 32], target: [0, 4.0, 0], distance: 32.5, rootScale: 0.53 },
+        uiAccent: {
+          accent: "#ff9530",
+          strong: "#d92d1a",
+          muted: "#f5c518",
+          dark: "#160704",
+          glow: "rgba(255, 132, 24, 0.44)"
+        },
+        scene: {
+          clear: "#040503",
+          background: "radial-gradient(circle at 50% 48%, rgba(129, 72, 24, 0.3), rgba(22, 49, 24, 0.42) 43%, rgba(4, 5, 3, 0.98) 79%), #040503",
+          fog: { color: "#0d1709", density: 0.018 },
+          lighting: {
+            ambient: { color: "#ffc780", intensity: 0.45 },
+            key: { color: "#ffd59b", intensity: 4.15 },
+            fill: { color: "#477f43", intensity: 0.9 },
+            rim: { color: "#ff8418", pulseBase: 2.55 },
+            accent: { color: "#f5c518", pulseBase: 2.25 }
+          }
+        }
+      }),
+      makeTreeVariation({
+        id: "baobab",
+        label: "Baobab",
+        map: makeBaobabMap,
+        cycleOrder: 10,
+        particlePalette: ["#a87858", "#7a9a65", "#c8a050", "#ff9050", "#6a8a55", "#b88868"],
+        camera: { position: [18, 13, 38], target: [0, 4.2, 0], distance: 34.4, minDistance: 15, maxDistance: 42, rootScale: 0.48 },
+        uiAccent: {
+          accent: "#d0a858",
+          strong: "#a06848",
+          muted: "#c8a050",
+          dark: "#1a0d04",
+          glow: "rgba(255, 144, 80, 0.42)"
+        },
+        scene: {
+          clear: "#070403",
+          background: "radial-gradient(circle at 51% 48%, rgba(163, 103, 48, 0.34), rgba(69, 38, 18, 0.45) 43%, rgba(7, 4, 3, 0.98) 79%), #070403",
+          fog: { color: "#1c0f08", density: 0.017 },
+          lighting: {
+            hemisphere: { sky: "#ffe0a3", ground: "#221107", intensity: 1.08 },
+            ambient: { color: "#e7b16c", intensity: 0.44 },
+            key: { color: "#ffd08d", intensity: 4.35, position: [6.4, 14, 4.4] },
+            fill: { color: "#6a8a55", intensity: 0.82 },
+            rim: { color: "#ff9050", pulseBase: 2.7 },
+            accent: { color: "#d0a858", pulseBase: 2.15 }
+          }
+        }
+      }),
+      makeTreeVariation({
+        id: "mangrove",
+        label: "Mangrove",
+        map: makeMangroveMap,
+        cycleOrder: 11,
+        particlePalette: ["#2e6e34", "#358040", "#5a9a52", "#1a3e22", "#7ac070", "#4a9ec0"],
+        camera: { position: [16, 12, 34], target: [0, 2.7, 0], distance: 31.0, rootPosition: [0.1, -0.8, 0], rootScale: 0.52 },
+        uiAccent: {
+          panel: "rgba(5, 14, 17, 0.64)",
+          hover: "rgba(24, 72, 82, 0.72)",
+          button: "rgba(13, 42, 48, 0.58)",
+          border: "rgba(93, 176, 208, 0.2)",
+          buttonBorder: "rgba(93, 176, 208, 0.25)",
+          borderActive: "rgba(174, 232, 238, 0.62)",
+          text: "#d7f0e8",
+          muted: "#7bc0b7",
+          accent: "#5db0d0",
+          strong: "#2e6e34",
+          dark: "#041014",
+          glow: "rgba(93, 176, 208, 0.4)"
+        },
+        scene: {
+          clear: "#030709",
+          background: "radial-gradient(circle at 50% 50%, rgba(50, 128, 139, 0.28), rgba(16, 58, 62, 0.42) 43%, rgba(3, 7, 9, 0.98) 80%), #030709",
+          fog: { color: "#0a1d24", density: 0.021 },
+          lighting: {
+            hemisphere: { sky: "#b9f0dc", ground: "#082238", intensity: 1.0 },
+            ambient: { color: "#84cbbf", intensity: 0.42 },
+            key: { color: "#d0f6dc", intensity: 3.75 },
+            fill: { color: "#4a9ec0", intensity: 1.18 },
+            rim: { color: "#5db0d0", pulseBase: 2.45 },
+            accent: { color: "#7ac070", pulseBase: 1.9 }
+          }
+        }
+      }),
+      makeTreeVariation({
+        id: "jacaranda",
+        label: "Jacaranda",
+        map: makeJacarandaMap,
+        cycleOrder: 4,
+        particlePalette: ["#7b4cc4", "#9867ea", "#b184f4", "#c7a6ff", "#5c2c91", "#357a43"],
+        camera: { position: [16, 12.5, 34], target: [0, 3.7, 0], distance: 27.0, maxDistance: 39, rootScale: 0.52 },
+        uiAccent: {
+          panel: "rgba(15, 9, 27, 0.64)",
+          hover: "rgba(54, 35, 92, 0.74)",
+          button: "rgba(33, 22, 55, 0.6)",
+          border: "rgba(199, 166, 255, 0.2)",
+          buttonBorder: "rgba(199, 166, 255, 0.25)",
+          borderActive: "rgba(224, 204, 255, 0.64)",
+          text: "#eadcff",
+          muted: "#b994ee",
+          accent: "#b184f4",
+          strong: "#6733a5",
+          dark: "#10051f",
+          glow: "rgba(177, 132, 244, 0.42)"
+        },
+        scene: {
+          clear: "#05030a",
+          background: "radial-gradient(circle at 49% 46%, rgba(100, 62, 154, 0.32), rgba(35, 25, 70, 0.44) 42%, rgba(5, 3, 10, 0.98) 79%), #05030a",
+          fog: { color: "#170d2c", density: 0.018 },
+          lighting: {
+            hemisphere: { sky: "#decaff", ground: "#151021", intensity: 1.08 },
+            ambient: { color: "#c1a5ff", intensity: 0.46 },
+            key: { color: "#ead7ff", intensity: 4.05 },
+            fill: { color: "#40804a", intensity: 0.78 },
+            rim: { color: "#9867ea", pulseBase: 2.55 },
+            accent: { color: "#c7a6ff", pulseBase: 2.18 }
+          }
+        }
+      }),
+      makeTreeVariation({
+        id: "banyan",
+        label: "Banyan",
+        map: makeBanyanMap,
+        cycleOrder: 12,
+        particlePalette: ["#143f22", "#367c40", "#78b765", "#6a4428", "#967050", "#2f7137"],
+        camera: { position: [20, 14, 42], target: [0, 4.2, 0], distance: 40.4, minDistance: 17, maxDistance: 46, rootScale: 0.42 },
+        uiAccent: {
+          accent: "#78b765",
+          strong: "#967050",
+          muted: "#b08a66",
+          dark: "#0d1207",
+          glow: "rgba(120, 183, 101, 0.36)"
+        },
+        scene: {
+          clear: "#030503",
+          background: "radial-gradient(circle at 50% 48%, rgba(80, 105, 54, 0.3), rgba(44, 35, 22, 0.45) 43%, rgba(3, 5, 3, 0.98) 80%), #030503",
+          fog: { color: "#0e1609", density: 0.02 },
+          lighting: {
+            hemisphere: { sky: "#d9e9ad", ground: "#11190d", intensity: 1.0 },
+            ambient: { color: "#c4b886", intensity: 0.42 },
+            key: { color: "#f0dcaa", intensity: 3.9, position: [6.2, 14, 5.8] },
+            fill: { color: "#367c40", intensity: 0.95 },
+            rim: { color: "#967050", pulseBase: 2.25 },
+            accent: { color: "#78b765", pulseBase: 1.95 }
+          }
+        }
+      }),
+      makeTreeVariation({
+        id: "banana",
+        label: "Banana",
+        map: makeBananaMap,
+        cycleOrder: 7,
+        particlePalette: ["#4a9a38", "#66b24a", "#86c858", "#f5d529", "#ffd83d", "#7b5a32"],
+        camera: { position: [15, 12, 32], target: [0, 4.2, 0], rootScale: 0.54 },
+        uiAccent: {
+          accent: "#ffd83d",
+          strong: "#58a842",
+          muted: "#d1d66a",
+          dark: "#151406",
+          glow: "rgba(255, 216, 61, 0.38)"
+        },
+        scene: {
+          clear: "#030603",
+          background: "radial-gradient(circle at 50% 47%, rgba(123, 148, 45, 0.3), rgba(39, 74, 29, 0.43) 43%, rgba(3, 6, 3, 0.98) 79%), #030603",
+          fog: { color: "#0d1908", density: 0.018 },
+          lighting: {
+            hemisphere: { sky: "#f0f7a6", ground: "#10200d", intensity: 1.08 },
+            ambient: { color: "#d8e87d", intensity: 0.45 },
+            key: { color: "#fff1a8", intensity: 4.15 },
+            fill: { color: "#58a842", intensity: 0.95 },
+            rim: { color: "#ffd83d", pulseBase: 2.55 },
+            accent: { color: "#86c858", pulseBase: 2.05 }
+          }
+        }
+      }),
+      makeTreeVariation({
+        id: "date-palm",
+        label: "Date Palm",
+        map: makeDatePalmMap,
+        cycleOrder: 8,
+        particlePalette: ["#3d8a3e", "#79bf5c", "#5a2f18", "#7a4424", "#a98a47", "#8a6540"],
+        camera: { position: [16, 13, 36], target: [0, 4.5, 0], distance: 30.2, minDistance: 14, maxDistance: 40, rootScale: 0.5 },
+        uiAccent: {
+          accent: "#d2b36c",
+          strong: "#8a6540",
+          muted: "#c5a65f",
+          dark: "#160f07",
+          glow: "rgba(210, 179, 108, 0.4)"
+        },
+        scene: {
+          clear: "#060403",
+          background: "radial-gradient(circle at 49% 48%, rgba(144, 106, 46, 0.33), rgba(58, 40, 20, 0.46) 43%, rgba(6, 4, 3, 0.98) 79%), #060403",
+          fog: { color: "#1a1208", density: 0.017 },
+          lighting: {
+            hemisphere: { sky: "#ffe2a6", ground: "#201207", intensity: 1.08 },
+            ambient: { color: "#e9bf75", intensity: 0.44 },
+            key: { color: "#ffda9a", intensity: 4.25 },
+            fill: { color: "#79bf5c", intensity: 0.82 },
+            rim: { color: "#d2b36c", pulseBase: 2.55 },
+            accent: { color: "#a86d36", pulseBase: 2.05 }
+          }
+        }
+      }),
+      makeTreeVariation({
+        id: "weeping-willow",
+        label: "Weeping Willow",
+        map: makeWeepingWillowMap,
+        cycleOrder: 9,
+        particlePalette: ["#7fc66c", "#9bdc85", "#2d7a43", "#f2eadb", "#d8d1c4", "#5aa85a"],
+        camera: { position: [17, 13, 36], target: [0, 4.0, 0], distance: 32.7, maxDistance: 40, rootScale: 0.5 },
+        uiAccent: {
+          accent: "#9bdc85",
+          strong: "#7fc66c",
+          muted: "#d8d1c4",
+          dark: "#0b1308",
+          glow: "rgba(155, 220, 133, 0.36)"
+        },
+        scene: {
+          clear: "#030604",
+          background: "radial-gradient(circle at 50% 47%, rgba(109, 151, 91, 0.29), rgba(35, 61, 38, 0.43) 43%, rgba(3, 6, 4, 0.98) 80%), #030604",
+          fog: { color: "#0c170c", density: 0.02 },
+          lighting: {
+            hemisphere: { sky: "#e8f8d8", ground: "#101c0f", intensity: 1.03 },
+            ambient: { color: "#cfdfba", intensity: 0.43 },
+            key: { color: "#f8ecd3", intensity: 3.95 },
+            fill: { color: "#5aa85a", intensity: 0.96 },
+            rim: { color: "#d8d1c4", pulseBase: 2.35 },
+            accent: { color: "#9bdc85", pulseBase: 2.0 }
+          }
+        }
+      })
+    ];
+
+    const CYCLE_VARIATION_INDICES = TREE_VARIATIONS
+      .map((variation, index) => ({ index, order: variation.cycleOrder }))
+      .sort((a, b) => a.order - b.order || a.index - b.index)
+      .map(({ index }) => index);
+
+    const initialVariation = TREE_VARIATIONS[0];
+    const initialFrame = initialVariation.camera;
+
     const stage = document.querySelector("#stage");
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
@@ -418,7 +918,7 @@
 
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
     renderer.setSize(stage.clientWidth, stage.clientHeight, false);
-    renderer.setClearColor(0x050403, 1);
+    renderer.setClearColor(initialVariation.scene.clear, 1);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.25;
@@ -426,11 +926,11 @@
     stage.prepend(renderer.domElement);
 
     const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x100906, 0.019);
+    scene.fog = new THREE.FogExp2(initialVariation.scene.fog.color, initialVariation.scene.fog.density);
 
-    const camera = new THREE.PerspectiveCamera(40, 1, 1, 90);
-    camera.position.set(14, 13, 30);
-    camera.lookAt(0, 3.3, 0);
+    const camera = new THREE.PerspectiveCamera(initialFrame.fov, 1, initialFrame.near, initialFrame.far);
+    camera.position.fromArray(initialFrame.position);
+    camera.lookAt(...initialFrame.target);
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
@@ -438,39 +938,42 @@
     controls.enablePan = false;
     controls.autoRotate = settings.autoRotate;
     controls.autoRotateSpeed = settings.rotateSpeed;
-    controls.minDistance = 13;
-    controls.maxDistance = 36;
-    controls.target.set(0, 3.2, 0);
+    controls.minDistance = initialFrame.minDistance;
+    controls.maxDistance = initialFrame.maxDistance;
+    controls.target.fromArray(initialFrame.target);
 
-    scene.add(new THREE.HemisphereLight(0xffd8a8, 0x1b0f08, 1.05));
-    scene.add(new THREE.AmbientLight(0xffc090, 0.48));
+    const hemisphere = new THREE.HemisphereLight();
+    scene.add(hemisphere);
 
-    const key = new THREE.DirectionalLight(0xffd0a0, 4.2);
-    key.position.set(5.6, 14, 5.4);
+    const ambient = new THREE.AmbientLight();
+    scene.add(ambient);
+
+    const key = new THREE.DirectionalLight();
     key.castShadow = false;
     scene.add(key);
 
-    const fill = new THREE.DirectionalLight(0x6d9a58, 1.0);
-    fill.position.set(-5, 8, -3);
+    const fill = new THREE.DirectionalLight();
     scene.add(fill);
 
-    const rim = new THREE.PointLight(0xff6f35, 4.2, 28, 1.6);
-    rim.position.set(-4, 9, -5);
+    const rim = new THREE.PointLight();
     scene.add(rim);
 
-    const accent = new THREE.PointLight(0xff9c5a, 3.3, 22, 1.6);
-    accent.position.set(4, 8, 4);
+    const accent = new THREE.PointLight();
     scene.add(accent);
 
+    const lights = { hemisphere, ambient, key, fill, rim, accent };
+
     const root = new THREE.Group();
-    root.position.set(0.1, -0.6, 0);
-    root.rotation.y = -0.32;
-    root.scale.setScalar(0.55);
+    root.position.fromArray(initialFrame.rootPosition);
+    root.rotation.y = initialFrame.rootRotationY;
+    root.scale.setScalar(initialFrame.rootScale);
     scene.add(root);
 
     const rng = mulberry32(0xB05A1);
     const tempObj = new THREE.Object3D();
     const tempColor = new THREE.Color();
+    const tempCameraTarget = new THREE.Vector3();
+    const tempCameraDirection = new THREE.Vector3();
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2(9999, 9999);
     pointer.lastMove = -Infinity;
@@ -507,7 +1010,13 @@
     let resumeRotateOnPointerRelease = false;
     let hoverActive = false;
     let hoverDepth = 0;
+    let activeSceneStyle = initialVariation.scene;
+    let cameraFrameTransition = null;
+    let lightingStyleTransition = null;
+    let currentFloatAmplitude = initialFrame.floatAmplitude;
+    const currentRootBasePosition = new THREE.Vector3().fromArray(initialFrame.rootPosition);
 
+    applyVariationStyle(activeVariation, true);
     buildBaseVoxels();
 
     for (const voxel of voxels) {
@@ -518,19 +1027,11 @@
 
     box.getCenter(treeCenter);
     treeCenter.y += 2.3;
-    variations[0] = makeAutumnMap();
-    variations[1] = makeWinterMap();
-    variations[2] = makeBlossomMap();
-    variations[3] = makeAncientMap();
-    variations[4] = makeOakMap();
-    variations[5] = makeFruitMap();
-    variations[6] = makeBaobabMap();
-    variations[7] = makeMangroveMap();
-    variations[8] = makeJacarandaMap();
-    variations[9] = makeBanyanMap();
-    variations[10] = makeBananaMap();
-    variations[11] = makeDatePalmMap();
-    variations[12] = makeWeepingWillowMap();
+    for (const variation of TREE_VARIATIONS) {
+      const map = variation.map();
+      variations.push({ ...variation, positions: map.positions, colors: map.colors });
+    }
+    const morphWaveReference = variations.find((variation) => variation.id === "maple") || variations[0];
 
     const cube = new THREE.BoxGeometry(1, 1, 1);
     const material = new THREE.MeshStandardMaterial({
@@ -548,11 +1049,24 @@
     applyVariation(activeVariation, true);
     buildParticles();
 
-    const pickerButtons = Array.from(document.querySelectorAll("#picker button"));
+    const picker = document.querySelector("#picker");
+    for (const [i, variation] of TREE_VARIATIONS.entries()) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.dataset.variation = String(i);
+      button.dataset.variationId = variation.id;
+      button.textContent = variation.label;
+      picker.append(button);
+    }
+
+    const pickerButtons = Array.from(picker.querySelectorAll("button"));
     function syncPicker() {
+      const current = morphing ? targetVariation : activeVariation;
       for (const btn of pickerButtons) {
         const i = Number(btn.dataset.variation);
-        btn.classList.toggle("active", i === (morphing ? targetVariation : activeVariation));
+        const active = i === current;
+        btn.classList.toggle("active", active);
+        btn.setAttribute("aria-pressed", String(active));
       }
     }
     for (const btn of pickerButtons) {
@@ -613,18 +1127,24 @@
     window.__voxelTreeMorph = {
       source: "inspired by the cool Hugging Face bonsai-image-webgpu voxel mechanics",
       voxels: voxels.length,
-      variations: variations.length,
-      cycleMs: 5000,
-      morphSeconds: 1.9,
-      hoverRadius: 7.2,
-      hoverForce: 8.6,
-      go: (index) => startMorph((index + variations.length) % variations.length),
-      next: () => {
-        const order = [3, 0, 1, 2, 8, 4, 5, 10, 11, 12, 6, 7, 9];
-        const next = order[(order.indexOf(activeVariation) + 1) % order.length];
-        startMorph(next);
-      },
-      state: () => ({ activeVariation, targetVariation, morphing, hoverActive }),
+      variationCount: TREE_VARIATIONS.length,
+      variations: TREE_VARIATIONS.map(variationDebugSummary),
+      cycleOrder: () => CYCLE_VARIATION_INDICES.map((index) => TREE_VARIATIONS[index].id),
+      get cycleMs() { return settings.cycleMs; },
+      get morphSeconds() { return settings.morphMs / 1000; },
+      get hoverRadius() { return settings.hoverRadius; },
+      get hoverForce() { return settings.hoverForce; },
+      go: (variation) => startMorph(resolveVariationIndex(variation)),
+      next: () => startMorph(nextVariationIndex(activeVariation)),
+      state: () => ({
+        activeVariation,
+        activeId: getVariationDefinition(activeVariation).id,
+        targetVariation,
+        targetId: getVariationDefinition(targetVariation).id,
+        styleId: getVariationDefinition(morphing ? targetVariation : activeVariation).id,
+        morphing,
+        hoverActive
+      }),
       colorStats: () => {
         const sum = new THREE.Color(0, 0, 0);
         let brightest = 0;
@@ -651,6 +1171,8 @@
       controls.update();
       updateAutoCycle(now);
       updateMorph(now);
+      updateCameraFrameTransition(now);
+      updateLightingStyleTransition(now);
       updateHover(dt, now);
       updateParticles(dt, now);
       updateLights(now);
@@ -1929,24 +2451,24 @@
 
       const trunkPath = [
         [0, 0.45, 0],
-        [-0.32, 5.0, 0.16],
-        [0.26, 9.3, -0.12],
-        [-0.12, 13.0, 0.1],
-        [0.18, 16.2, 0]
+        [-0.32, 5.4, 0.16],
+        [0.26, 10.1, -0.12],
+        [-0.12, 14.7, 0.1],
+        [0.18, 18.6, 0]
       ];
 
       const limbs = [
-        { angle: -2.95, start: 0.54, length: 10.6, lift: 2.8, sag: 2.1, hang: 9.8 },
-        { angle: -2.48, start: 0.62, length: 9.5, lift: 3.2, sag: 1.8, hang: 8.9 },
-        { angle: -1.96, start: 0.66, length: 11.2, lift: 2.9, sag: 2.0, hang: 10.0 },
-        { angle: -1.34, start: 0.72, length: 9.0, lift: 3.5, sag: 1.4, hang: 8.4 },
-        { angle: -0.78, start: 0.58, length: 11.6, lift: 2.6, sag: 2.4, hang: 10.2 },
-        { angle: -0.18, start: 0.64, length: 10.0, lift: 3.0, sag: 2.0, hang: 9.5 },
-        { angle: 0.42, start: 0.56, length: 11.8, lift: 2.7, sag: 2.3, hang: 10.4 },
-        { angle: 1.04, start: 0.68, length: 9.2, lift: 3.4, sag: 1.6, hang: 8.8 },
-        { angle: 1.58, start: 0.72, length: 10.4, lift: 3.1, sag: 1.8, hang: 9.4 },
-        { angle: 2.16, start: 0.6, length: 11.4, lift: 2.8, sag: 2.2, hang: 10.0 },
-        { angle: 2.72, start: 0.54, length: 10.2, lift: 2.6, sag: 2.1, hang: 9.7 }
+        { angle: -2.95, start: 0.62, length: 10.6, lift: 2.9, sag: 2.0, hang: 9.0 },
+        { angle: -2.48, start: 0.7, length: 9.5, lift: 3.3, sag: 1.7, hang: 8.2 },
+        { angle: -1.96, start: 0.74, length: 11.2, lift: 3.0, sag: 1.9, hang: 9.2 },
+        { angle: -1.34, start: 0.8, length: 9.0, lift: 3.5, sag: 1.3, hang: 7.8 },
+        { angle: -0.78, start: 0.66, length: 11.6, lift: 2.8, sag: 2.2, hang: 9.4 },
+        { angle: -0.18, start: 0.72, length: 10.0, lift: 3.1, sag: 1.9, hang: 8.8 },
+        { angle: 0.42, start: 0.64, length: 11.8, lift: 2.8, sag: 2.1, hang: 9.6 },
+        { angle: 1.04, start: 0.76, length: 9.2, lift: 3.4, sag: 1.5, hang: 8.1 },
+        { angle: 1.58, start: 0.8, length: 10.4, lift: 3.1, sag: 1.7, hang: 8.7 },
+        { angle: 2.16, start: 0.68, length: 11.4, lift: 2.9, sag: 2.0, hang: 9.2 },
+        { angle: 2.72, start: 0.62, length: 10.2, lift: 2.7, sag: 1.9, hang: 8.9 }
       ];
 
       const limbPoint = (limb, along) => {
@@ -1961,7 +2483,7 @@
       };
 
       const placeWhiteTrunk = (voxel, p) => {
-        const t = clamp((voxel.base.y - 4.8) / 10.8);
+        const t = clamp((voxel.base.y - 4.8) / 8.6);
         const center = samplePath(trunkPath, t);
         const angle = Math.atan2(voxel.base.z, Math.abs(voxel.base.x) > 0.01 ? voxel.base.x : 0.01) + t * 0.85;
         const ripple = Math.sin(t * Math.PI * 18 + angle * 5);
@@ -2013,7 +2535,7 @@
         const p = voxel.base.clone();
         let color = voxel.color.clone();
         if (voxel.role === "leaf") {
-          if (voxel.seed < 0.34) {
+          if (voxel.seed < 0.42) {
             color = placeWhiteLimb(voxel, p);
           } else {
             color = placeCurtainLeaf(voxel, p);
@@ -2021,7 +2543,7 @@
         } else if (voxel.role === "trunk") {
           color = placeWhiteTrunk(voxel, p);
         } else if (voxel.role === "flower" || voxel.role === "mushroom" || voxel.role === "grassTuft") {
-          color = voxel.seed < 0.34 ? placeWhiteLimb(voxel, p) : placeCurtainLeaf(voxel, p);
+          color = voxel.seed < 0.42 ? placeWhiteLimb(voxel, p) : placeCurtainLeaf(voxel, p);
         } else if (voxel.role === "grass") {
           p.x *= 1.18;
           p.z *= 1.18;
@@ -2053,7 +2575,300 @@
       return { positions, colors };
     }
 
+    function getVariationDefinition(index) {
+      return TREE_VARIATIONS[index] || TREE_VARIATIONS[0];
+    }
+
+    function resolveVariationIndex(value) {
+      if (typeof value === "string") {
+        const index = TREE_VARIATIONS.findIndex((variation) => variation.id === value);
+        return index === -1 ? activeVariation : index;
+      }
+      const numeric = Number(value);
+      if (!Number.isFinite(numeric)) return activeVariation;
+      const index = Math.trunc(numeric) % TREE_VARIATIONS.length;
+      return index < 0 ? index + TREE_VARIATIONS.length : index;
+    }
+
+    function nextVariationIndex(index) {
+      const current = CYCLE_VARIATION_INDICES.indexOf(index);
+      return CYCLE_VARIATION_INDICES[(Math.max(0, current) + 1) % CYCLE_VARIATION_INDICES.length];
+    }
+
+    function variationDebugSummary(variation) {
+      return {
+        id: variation.id,
+        label: variation.label,
+        cycleOrder: variation.cycleOrder,
+        particlePalette: [...variation.particlePalette],
+        camera: { ...variation.camera, distance: cameraFrameDistance(variation.camera) },
+        uiAccent: { ...variation.uiAccent },
+        fog: { ...variation.scene.fog },
+        lighting: {
+          hemisphere: { ...variation.scene.lighting.hemisphere },
+          ambient: { ...variation.scene.lighting.ambient },
+          key: { ...variation.scene.lighting.key },
+          fill: { ...variation.scene.lighting.fill },
+          rim: { ...variation.scene.lighting.rim },
+          accent: { ...variation.scene.lighting.accent }
+        },
+        background: variation.scene.background
+      };
+    }
+
+    function applyVariationStyle(index, immediateFrame = false) {
+      const variation = getVariationDefinition(index);
+      const currentLighting = cloneLightingStyle(activeSceneStyle.lighting);
+      activeSceneStyle = { ...variation.scene, lighting: currentLighting };
+
+      applyCssVariables(variation.uiAccent, variation.scene);
+      renderer.setClearColor(variation.scene.clear, 1);
+      scene.fog.color.set(variation.scene.fog.color);
+      scene.fog.density = variation.scene.fog.density;
+      setCameraFrameTarget(variation.camera, immediateFrame);
+      setLightingStyleTarget(variation.scene.lighting, immediateFrame);
+    }
+
+    function applyCssVariables(uiAccent, sceneStyle) {
+      const style = document.documentElement.style;
+      style.setProperty("--body-background", sceneStyle.clear);
+      style.setProperty("--stage-background", sceneStyle.background);
+      style.setProperty("--stage-overlay", sceneStyle.overlay);
+      style.setProperty("--grain-opacity", String(sceneStyle.grainOpacity));
+      style.setProperty("--ui-panel-bg", uiAccent.panel);
+      style.setProperty("--ui-hover-bg", uiAccent.hover);
+      style.setProperty("--ui-button-bg", uiAccent.button);
+      style.setProperty("--ui-border", uiAccent.border);
+      style.setProperty("--ui-button-border", uiAccent.buttonBorder);
+      style.setProperty("--ui-border-active", uiAccent.borderActive);
+      style.setProperty("--ui-text", uiAccent.text);
+      style.setProperty("--ui-muted", uiAccent.muted);
+      style.setProperty("--ui-accent", uiAccent.accent);
+      style.setProperty("--ui-accent-strong", uiAccent.strong);
+      style.setProperty("--ui-accent-dark", uiAccent.dark);
+      style.setProperty("--ui-glow", uiAccent.glow);
+    }
+
+    function setCameraFrameTarget(frame, immediate = false) {
+      if (immediate) {
+        cameraFrameTransition = null;
+        applyCameraFrame(frame, true);
+        return;
+      }
+
+      const currentFrame = readCameraFrame();
+      cameraFrameTransition = {
+        from: currentFrame,
+        to: cloneCameraFrame(frame),
+        started: performance.now(),
+        duration: Math.max(settings.morphMs, 900)
+      };
+    }
+
+    function readCameraFrame() {
+      return {
+        fov: camera.fov,
+        near: camera.near,
+        far: camera.far,
+        distance: camera.position.distanceTo(controls.target),
+        target: controls.target.toArray(),
+        minDistance: controls.minDistance,
+        maxDistance: controls.maxDistance,
+        rootPosition: currentRootBasePosition.toArray(),
+        rootRotationY: root.rotation.y,
+        rootScale: root.scale.x,
+        floatAmplitude: currentFloatAmplitude
+      };
+    }
+
+    function cloneCameraFrame(frame) {
+      return {
+        ...frame,
+        distance: cameraFrameDistance(frame),
+        position: [...frame.position],
+        target: [...frame.target],
+        rootPosition: [...frame.rootPosition]
+      };
+    }
+
+    function interpolateCameraFrame(from, to, t) {
+      return {
+        fov: lerp(from.fov, to.fov, t),
+        near: lerp(from.near, to.near, t),
+        far: lerp(from.far, to.far, t),
+        distance: lerp(from.distance, to.distance, t),
+        target: lerpArray(from.target, to.target, t),
+        minDistance: lerp(from.minDistance, to.minDistance, t),
+        maxDistance: lerp(from.maxDistance, to.maxDistance, t),
+        rootPosition: lerpArray(from.rootPosition, to.rootPosition, t),
+        rootRotationY: lerp(from.rootRotationY, to.rootRotationY, t),
+        rootScale: lerp(from.rootScale, to.rootScale, t),
+        floatAmplitude: lerp(from.floatAmplitude, to.floatAmplitude, t)
+      };
+    }
+
+    function updateCameraFrameTransition(now) {
+      if (!cameraFrameTransition) return;
+      const progress = clamp((now - cameraFrameTransition.started) / cameraFrameTransition.duration);
+      const eased = easeInOutCubic(progress);
+      applyCameraFrame(interpolateCameraFrame(cameraFrameTransition.from, cameraFrameTransition.to, eased));
+      if (progress >= 1) {
+        applyCameraFrame(cameraFrameTransition.to);
+        cameraFrameTransition = null;
+      }
+    }
+
+    function applyCameraFrame(frame, useAbsolutePosition = false) {
+      const target = tempCameraTarget.fromArray(frame.target);
+      camera.fov = frame.fov;
+      camera.near = frame.near;
+      camera.far = frame.far;
+      controls.minDistance = frame.minDistance;
+      controls.maxDistance = frame.maxDistance;
+      if (useAbsolutePosition) {
+        camera.position.fromArray(frame.position);
+        if (typeof frame.distance === "number") {
+          tempCameraDirection.copy(camera.position).sub(target);
+          if (tempCameraDirection.lengthSq() >= 1e-6) {
+            tempCameraDirection.normalize();
+            camera.position.copy(target).addScaledVector(tempCameraDirection, clampCameraDistance(frame, frame.distance));
+          }
+        }
+      } else {
+        tempCameraDirection.copy(camera.position).sub(controls.target);
+        if (tempCameraDirection.lengthSq() < 1e-6) {
+          tempCameraDirection.fromArray(frame.position).sub(target);
+        }
+        tempCameraDirection.normalize();
+        const distance = clampCameraDistance(frame, frame.distance ?? cameraFrameDistance(frame));
+        camera.position.copy(target).addScaledVector(tempCameraDirection, distance);
+      }
+      camera.lookAt(target);
+      camera.updateProjectionMatrix();
+      controls.target.copy(target);
+      currentRootBasePosition.fromArray(frame.rootPosition);
+      root.position.set(frame.rootPosition[0], frame.rootPosition[1], frame.rootPosition[2]);
+      root.rotation.y = frame.rootRotationY;
+      root.scale.setScalar(frame.rootScale);
+      currentFloatAmplitude = frame.floatAmplitude;
+      const wasAutoRotating = controls.autoRotate;
+      controls.autoRotate = false;
+      controls.update();
+      controls.autoRotate = wasAutoRotating;
+    }
+
+    function cameraFrameDistance(frame) {
+      if (typeof frame.distance === "number") return frame.distance;
+      const position = frame.position || DEFAULT_CAMERA_FRAME.position;
+      const target = frame.target || DEFAULT_CAMERA_FRAME.target;
+      return Math.hypot(
+        position[0] - target[0],
+        position[1] - target[1],
+        position[2] - target[2]
+      );
+    }
+
+    function clampCameraDistance(frame, distance) {
+      return Math.max(frame.minDistance, Math.min(frame.maxDistance, distance));
+    }
+
+    function setLightingStyleTarget(style, immediate = false) {
+      if (immediate) {
+        lightingStyleTransition = null;
+        activeSceneStyle.lighting = cloneLightingStyle(style);
+        applyLightingStyle(activeSceneStyle.lighting);
+        return;
+      }
+
+      lightingStyleTransition = {
+        from: cloneLightingStyle(activeSceneStyle.lighting),
+        to: cloneLightingStyle(style),
+        started: performance.now(),
+        duration: Math.max(settings.morphMs, 900)
+      };
+    }
+
+    function updateLightingStyleTransition(now) {
+      if (!lightingStyleTransition) return;
+      const progress = clamp((now - lightingStyleTransition.started) / lightingStyleTransition.duration);
+      const eased = easeInOutCubic(progress);
+      activeSceneStyle.lighting = interpolateLightingStyle(lightingStyleTransition.from, lightingStyleTransition.to, eased);
+      applyLightingStyle(activeSceneStyle.lighting);
+      if (progress >= 1) {
+        activeSceneStyle.lighting = cloneLightingStyle(lightingStyleTransition.to);
+        applyLightingStyle(activeSceneStyle.lighting);
+        lightingStyleTransition = null;
+      }
+    }
+
+    function cloneLightingStyle(style) {
+      return {
+        hemisphere: cloneLightStyle(style.hemisphere),
+        ambient: cloneLightStyle(style.ambient),
+        key: cloneLightStyle(style.key),
+        fill: cloneLightStyle(style.fill),
+        rim: cloneLightStyle(style.rim),
+        accent: cloneLightStyle(style.accent)
+      };
+    }
+
+    function cloneLightStyle(style) {
+      const clone = { ...style };
+      if (style.position) clone.position = [...style.position];
+      return clone;
+    }
+
+    function interpolateLightingStyle(from, to, t) {
+      return {
+        hemisphere: interpolateLightStyle(from.hemisphere, to.hemisphere, t, ["sky", "ground"]),
+        ambient: interpolateLightStyle(from.ambient, to.ambient, t, ["color"]),
+        key: interpolateLightStyle(from.key, to.key, t, ["color"]),
+        fill: interpolateLightStyle(from.fill, to.fill, t, ["color"]),
+        rim: interpolateLightStyle(from.rim, to.rim, t, ["color"]),
+        accent: interpolateLightStyle(from.accent, to.accent, t, ["color"])
+      };
+    }
+
+    function interpolateLightStyle(from, to, t, colorFields) {
+      const style = {};
+      for (const field of colorFields) {
+        if (from[field] || to[field]) style[field] = lerpColor(from[field] || to[field], to[field] || from[field], t);
+      }
+      for (const field of ["intensity", "distance", "decay", "pulseBase", "pulseAmount", "pulseSpeed", "pulseOffset", "hoverBoost"]) {
+        if (typeof from[field] === "number" || typeof to[field] === "number") {
+          const fromValue = typeof from[field] === "number" ? from[field] : to[field];
+          const toValue = typeof to[field] === "number" ? to[field] : from[field];
+          style[field] = lerp(fromValue, toValue, t);
+        }
+      }
+      if (from.position || to.position) {
+        style.position = lerpArray(from.position || to.position, to.position || from.position, t);
+      }
+      return style;
+    }
+
+    function applyLightingStyle(style) {
+      lights.hemisphere.color.set(style.hemisphere.sky);
+      lights.hemisphere.groundColor.set(style.hemisphere.ground);
+      lights.hemisphere.intensity = style.hemisphere.intensity;
+      applyLightStyle(lights.ambient, style.ambient);
+      applyLightStyle(lights.key, style.key);
+      applyLightStyle(lights.fill, style.fill);
+      applyLightStyle(lights.rim, style.rim);
+      applyLightStyle(lights.accent, style.accent);
+    }
+
+    function applyLightStyle(light, style) {
+      if (style.color) light.color.set(style.color);
+      if (typeof style.intensity === "number") light.intensity = style.intensity;
+      if (style.position) light.position.fromArray(style.position);
+      if (typeof style.distance === "number") light.distance = style.distance;
+      if (typeof style.decay === "number") light.decay = style.decay;
+    }
+
     function applyVariation(index, immediate = false) {
+      index = resolveVariationIndex(index);
+      applyVariationStyle(index, immediate);
       const variation = variations[index];
       activeVariation = index;
       for (let i = 0; i < voxels.length; i++) {
@@ -2067,7 +2882,9 @@
     }
 
     function startMorph(index) {
+      index = resolveVariationIndex(index);
       if (morphing || index === activeVariation) return;
+      applyVariationStyle(index);
       targetVariation = index;
       morphing = true;
       morphStarted = performance.now();
@@ -2082,7 +2899,7 @@
       let t = clamp((now - morphStarted) / duration);
       t = easeInOutCubic(t);
       const target = variations[targetVariation];
-      const base = variations[0];
+      const base = morphWaveReference;
 
       for (let i = 0; i < voxels.length; i++) {
         const waveDelay = (Math.sin(base.positions[i].x * 0.5 + base.positions[i].z * 0.7) * 0.5 + 0.5) * 0.3;
@@ -2117,9 +2934,7 @@
         return;
       }
       if (now - lastMorphAt >= settings.cycleMs) {
-        const order = [3, 0, 1, 2, 8, 4, 5, 10, 11, 12, 6, 7, 9];
-        const next = order[(order.indexOf(activeVariation) + 1) % order.length];
-        startMorph(next);
+        startMorph(nextVariationIndex(activeVariation));
       }
     }
 
@@ -2359,21 +3174,6 @@
       root.add(leaves);
 
       const leafState = [];
-      const leafColorSets = [
-        ["#e63c2e", "#d4452f", "#f05a3a", "#ff6b45", "#f5a623", "#ff8c42"],
-        ["#1a4a2a", "#224e30", "#2a5a38", "#1e4828", "#164020", "#2e6e3e"],
-        ["#ffb7c5", "#ff97b0", "#ffc8d6", "#fff0f5", "#ffd0db"],
-        ["#456f3a", "#5a8845", "#3a5e30", "#9a5226", "#b04030", "#345532"],
-        ["#2f7a36", "#54a04a", "#7ec06a", "#a8d068", "#388540", "#62b058"],
-        ["#1b5028", "#143f20", "#d92d1a", "#ff8418", "#f5c518", "#205830"],
-        ["#a87858", "#7a9a65", "#c8a050", "#ff9050", "#6a8a55", "#b88868"],
-        ["#2e6e34", "#358040", "#5a9a52", "#1a3e22", "#7ac070", "#4a9ec0"],
-        ["#7b4cc4", "#9867ea", "#b184f4", "#c7a6ff", "#5c2c91", "#357a43"],
-        ["#143f22", "#367c40", "#78b765", "#6a4428", "#967050", "#2f7137"],
-        ["#4a9a38", "#66b24a", "#86c858", "#f5d529", "#ffd83d", "#7b5a32"],
-        ["#3d8a3e", "#79bf5c", "#5a2f18", "#7a4424", "#a98a47", "#8a6540"],
-        ["#7fc66c", "#9bdc85", "#2d7a43", "#f2eadb", "#d8d1c4", "#5aa85a"]
-      ];
       for (let i = 0; i < leafMax; i++) {
         resetLeaf(i, rng() * 6);
       }
@@ -2426,9 +3226,12 @@
 
         const leafCount = settings.leafCount;
         leaves.count = leafCount;
-        const colors = leafColorSets[activeVariation] || leafColorSets[0];
-        if (leaves.userData.lastVariation !== activeVariation) {
-          leaves.userData.lastVariation = activeVariation;
+        const particleVariation = morphing ? targetVariation : activeVariation;
+        const particleDefinition = getVariationDefinition(particleVariation);
+        const colors = particleDefinition.particlePalette;
+        if (leaves.userData.lastVariation !== particleVariation) {
+          leaves.userData.lastVariation = particleVariation;
+          mat.color.set(particleDefinition.uiAccent.accent);
           for (let i = 0; i < leafMax; i++) {
             tempColor.set(pick(colors));
             leaves.setColorAt(i, tempColor);
@@ -2470,9 +3273,15 @@
 
     function updateLights(now) {
       const phase = now * 0.001;
-      rim.intensity = 2.6 + Math.sin(phase * 0.7) * 0.35 + (hoverActive ? 0.45 : 0);
-      accent.intensity = 2.1 + Math.sin(phase * 0.53 + 1) * 0.3;
-      root.position.y = -0.6 + Math.sin(phase * 1.2) * 0.035;
+      const rimStyle = activeSceneStyle.lighting.rim;
+      const accentStyle = activeSceneStyle.lighting.accent;
+      rim.intensity = rimStyle.pulseBase +
+        Math.sin(phase * rimStyle.pulseSpeed + rimStyle.pulseOffset) * rimStyle.pulseAmount +
+        (hoverActive ? rimStyle.hoverBoost : 0);
+      accent.intensity = accentStyle.pulseBase +
+        Math.sin(phase * accentStyle.pulseSpeed + accentStyle.pulseOffset) * accentStyle.pulseAmount +
+        (hoverActive ? accentStyle.hoverBoost : 0);
+      root.position.y = currentRootBasePosition.y + Math.sin(phase * 1.2) * currentFloatAmplitude;
     }
 
     function resize() {
@@ -2556,6 +3365,18 @@
 
     function pick(values) {
       return values[Math.floor(rng() * values.length)];
+    }
+
+    function lerp(a, b, t) {
+      return a + (b - a) * t;
+    }
+
+    function lerpArray(a, b, t) {
+      return a.map((value, index) => lerp(value, b[index], t));
+    }
+
+    function lerpColor(from, to, t) {
+      return `#${new THREE.Color(from).lerp(new THREE.Color(to), t).getHexString()}`;
     }
 
     function clamp(value) {
