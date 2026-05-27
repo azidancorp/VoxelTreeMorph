@@ -964,6 +964,41 @@
             accent: { color: "#5fa45a", pulseBase: 1.9 }
           }
         }
+      }),
+      makeTreeVariation({
+        id: "giant-water-lily",
+        label: "Giant Water Lily",
+        map: makeGiantWaterLilyMap,
+        cycleOrder: 14,
+        particlePalette: ["#fff0e6", "#ffb8c8", "#ffd54a", "#56a8c2", "#3a7a44", "#aee0ee"],
+        camera: { position: [13, 14, 30], target: [0, 1.6, 0], distance: 30.2, minDistance: 13, maxDistance: 42, rootScale: 0.42 },
+        uiAccent: {
+          panel: "rgba(6, 18, 24, 0.62)",
+          hover: "rgba(36, 96, 116, 0.7)",
+          button: "rgba(16, 48, 60, 0.58)",
+          border: "rgba(186, 226, 240, 0.22)",
+          buttonBorder: "rgba(186, 226, 240, 0.26)",
+          borderActive: "rgba(255, 220, 232, 0.62)",
+          text: "#e9f5f8",
+          muted: "#9bc6d4",
+          accent: "#ffc4d4",
+          strong: "#56a8c2",
+          dark: "#06141a",
+          glow: "rgba(255, 196, 214, 0.4)"
+        },
+        scene: {
+          clear: "#040a10",
+          background: "radial-gradient(circle at 50% 52%, rgba(70, 138, 168, 0.32), rgba(18, 50, 72, 0.42) 42%, rgba(4, 10, 16, 0.98) 80%), #040a10",
+          fog: { color: "#0a1c28", density: 0.02 },
+          lighting: {
+            hemisphere: { sky: "#dff1f8", ground: "#0a1e26", intensity: 1.1 },
+            ambient: { color: "#bfe0ec", intensity: 0.46 },
+            key: { color: "#ffe6d8", intensity: 4.1, position: [5.2, 14, 5.6] },
+            fill: { color: "#56a8c2", intensity: 1.05 },
+            rim: { color: "#ffc4d4", pulseBase: 2.5 },
+            accent: { color: "#88d6c8", pulseBase: 2.0 }
+          }
+        }
       })
     ];
 
@@ -2918,6 +2953,156 @@
           color = new THREE.Color(pick(rng() < 0.55 ? moss : duff)).multiplyScalar(0.88);
         } else if (voxel.role === "flower" || voxel.role === "mushroom") {
           color = new THREE.Color(pick(rng() < 0.5 ? sorrel : fern));
+        }
+        return [p, color];
+      });
+    }
+
+    function makeGiantWaterLilyMap() {
+      const padDeep = ["#1f4a2a", "#264f32", "#1a4226", "#2c5a36", "#214a2a"];
+      const padMid = ["#3a7a44", "#458b4c", "#357a3e", "#4a9050", "#3f8c46"];
+      const padLight = ["#62b06a", "#74bf78", "#5da66a", "#88c47a", "#6cb274"];
+      const padRim = ["#2c5a30", "#356a36", "#244a26", "#3e7438", "#2a5230"];
+      const padRimLit = ["#4f8a44", "#5b9a4c", "#447a3e"];
+      const petalWhite = ["#fff8f0", "#fff0e6", "#ffe8d8", "#fcdbc4", "#fff5ee"];
+      const petalPink = ["#ffb8c8", "#ffaabe", "#ff95b0", "#ffd0d8", "#ffc0d0"];
+      const petalDeep = ["#e870a0", "#d65580", "#bc4c70", "#ff8aac"];
+      const stamen = ["#ffd54a", "#ffc62e", "#ffe580", "#f8b020", "#ffb000"];
+      const stemGreen = ["#2c6e36", "#3a7c40", "#1f5a2e", "#356e3a"];
+      const budGreen = ["#3a7c40", "#4a8b48", "#2c6e36"];
+      const waterShallow = ["#3a8aa6", "#48a0bc", "#3f97b2", "#56a8c2", "#3e8aaa"];
+      const waterMid = ["#1f5e7c", "#256888", "#1a5070", "#2e7090"];
+      const waterDeep = ["#0e3850", "#143f5a", "#0a2c44", "#175068", "#0d3548"];
+      const ripple = ["#aee0ee", "#cdeef6", "#9fd2e0", "#bbe5ee", "#dff3f8"];
+      const stone = ["#7a7264", "#8a8276", "#65604f", "#948b76"];
+      const mud = ["#3e2e1c", "#4a3622", "#2e2014", "#523a24"];
+
+      const waterY = 0.42;
+
+      const pads = [
+        { x: -5.2, z: -3.6, r: 4.2, notch: 0.2, flower: { kind: "bloom", height: 2.4, openness: 0.95 } },
+        { x: 4.7, z: -2.0, r: 3.6, notch: 0.7, flower: { kind: "bud", height: 1.7 } },
+        { x: 0.6, z: 4.9, r: 4.8, notch: 1.2, flower: { kind: "bloom", height: 3.0, openness: 0.78 } },
+        { x: -6.9, z: 4.5, r: 2.8, notch: 2.1, flower: null },
+        { x: 6.5, z: 4.0, r: 3.2, notch: -0.7, flower: { kind: "bloom", height: 2.1, openness: 1.0 } },
+        { x: -1.9, z: -5.8, r: 3.0, notch: 1.7, flower: null },
+        { x: 7.8, z: -5.4, r: 2.4, notch: 0.3, flower: { kind: "bud", height: 1.4 } },
+        { x: -8.5, z: -0.6, r: 2.2, notch: -1.2, flower: null }
+      ];
+      const flowerPads = pads.filter((pd) => pd.flower);
+
+      const padIndex = (seed, offset = 0) => Math.floor(((seed * 71.0 + offset * 13.0) % 1 + 1) % 1 * pads.length) % pads.length;
+      const flowerPadIndex = (seed, offset = 0) => Math.floor(((seed * 79.0 + offset * 17.0) % 1 + 1) % 1 * flowerPads.length) % flowerPads.length;
+
+      const placePad = (voxel, p, offset = 0) => {
+        const i = padIndex(voxel.seed, offset);
+        const pad = pads[i];
+        const angle = ((voxel.seed * 53.0 + offset * 7.0 + voxel.base.x * 0.13 + voxel.base.z * 0.09) % 1 + 1) % 1 * Math.PI * 2;
+        const angleFromNotch = Math.atan2(Math.sin(angle - pad.notch), Math.cos(angle - pad.notch));
+        const notchCut = Math.abs(angleFromNotch) < 0.32 ? 0.6 : 1.0;
+        const radialT = Math.sqrt(((voxel.seed * 41.3 + Math.abs(voxel.base.x) * 0.07 + offset * 5.7) % 1 + 1) % 1);
+        const r = pad.r * radialT * notchCut;
+        const rim = radialT > 0.9;
+        const dimple = Math.sin(angle * 7 + radialT * 4.0) * 0.04;
+        const upward = rim ? 0.5 : 0.06 + dimple;
+        p.x = pad.x + Math.cos(angle) * r + (rng() - 0.5) * 0.14;
+        p.z = pad.z + Math.sin(angle) * r + (rng() - 0.5) * 0.14;
+        p.y = waterY + upward + (rng() - 0.5) * 0.05;
+        const lit = Math.cos(angle - 0.5) > 0.0;
+        if (rim) return new THREE.Color(pick(lit ? padRimLit : padRim));
+        if (lit && rng() < 0.45) return new THREE.Color(pick(padLight));
+        if (rng() < 0.38) return new THREE.Color(pick(padDeep));
+        return new THREE.Color(pick(padMid));
+      };
+
+      const placeFlower = (voxel, p, offset = 0) => {
+        if (flowerPads.length === 0) return new THREE.Color(pick(petalWhite));
+        const i = flowerPadIndex(voxel.seed, offset);
+        const pad = flowerPads[i];
+        const f = pad.flower;
+        const angle = ((voxel.seed * 41.0 + voxel.base.x * 0.17 + voxel.base.z * 0.11 + offset * 1.7) % 1 + 1) % 1 * Math.PI * 2;
+        const layer = Math.floor(((voxel.seed * 13.0 + offset * 3.0) % 1 + 1) % 1 * 4);
+        const openness = f.kind === "bud" ? 0.18 : (f.openness || 1.0);
+        const petalLen = f.kind === "bud" ? 0.55 : 0.95 + layer * 0.32;
+        const flat = openness * petalLen;
+        const up = (1 - openness) * petalLen + (f.kind === "bud" ? 0.6 : 0.1);
+        const radialT = ((voxel.seed * 89.0 + Math.abs(voxel.base.y) * 0.013 + offset * 0.31) % 1 + 1) % 1;
+        const r = 0.18 + flat * radialT;
+        const tilt = f.kind === "bud" ? Math.cos(radialT * Math.PI * 0.5) : Math.cos(radialT * Math.PI * 0.5) * (1 - openness * 0.6);
+        const hCenter = waterY + f.height;
+        p.x = pad.x + Math.cos(angle) * r + (rng() - 0.5) * 0.1;
+        p.z = pad.z + Math.sin(angle) * r + (rng() - 0.5) * 0.1;
+        p.y = hCenter + up * tilt + (rng() - 0.5) * 0.06;
+        if (f.kind === "bud") {
+          if (radialT > 0.75 && rng() < 0.35) return new THREE.Color(pick(budGreen));
+          return new THREE.Color(pick(rng() < 0.6 ? petalPink : petalWhite));
+        }
+        if (radialT < 0.18) return new THREE.Color(pick(stamen));
+        if (radialT > 0.78 && rng() < 0.4) return new THREE.Color(pick(petalDeep));
+        if (radialT > 0.52 && rng() < 0.5) return new THREE.Color(pick(petalPink));
+        return new THREE.Color(pick(petalWhite));
+      };
+
+      const placeStem = (voxel, p, offset = 0) => {
+        if (flowerPads.length === 0) {
+          p.y = waterY + (rng() - 0.5) * 0.08;
+          return new THREE.Color(pick(stemGreen));
+        }
+        const i = flowerPadIndex(voxel.seed, offset + 0.7);
+        const pad = flowerPads[i];
+        const t = ((voxel.seed * 17.0 + Math.abs(voxel.base.y) * 0.013 + offset * 0.11) % 1 + 1) % 1;
+        const sway = Math.sin(t * Math.PI * 2 + voxel.seed * 11.0) * 0.08;
+        p.x = pad.x + sway + (rng() - 0.5) * 0.16;
+        p.z = pad.z + sway * 0.6 + (rng() - 0.5) * 0.16;
+        p.y = waterY - 0.15 + t * (pad.flower.height + 0.25) + (rng() - 0.5) * 0.05;
+        return new THREE.Color(pick(stemGreen));
+      };
+
+      const placeWater = (voxel, p, offset = 0) => {
+        const x = voxel.base.x * 1.34 + (rng() - 0.5) * 1.3;
+        const z = voxel.base.z * 1.5 + (rng() - 0.5) * 1.3;
+        p.x = Math.max(-12.6, Math.min(12.6, x));
+        p.z = Math.max(-9.2, Math.min(9.2, z));
+        const ripples = Math.sin(p.x * 0.7 + p.z * 0.6 + offset) * 0.05 + Math.cos(p.x * 0.4 - p.z * 0.5) * 0.03;
+        p.y = waterY - 0.22 + ripples + (rng() - 0.5) * 0.04;
+        if (rng() < 0.08) return new THREE.Color(pick(ripple));
+        if (rng() < 0.5) return new THREE.Color(pick(waterShallow));
+        return new THREE.Color(pick(waterMid));
+      };
+
+      const placeDeepWater = (voxel, p) => {
+        p.x *= 1.55;
+        p.z *= 1.55;
+        p.y = Math.min(p.y * 0.52, waterY - 0.5);
+        return new THREE.Color(pick(rng() < 0.7 ? waterDeep : waterMid));
+      };
+
+      return makeMap((voxel) => {
+        const p = voxel.base.clone();
+        let color = voxel.color.clone();
+        if (voxel.role === "leaf") {
+          if (voxel.seed < 0.7) {
+            color = placePad(voxel, p);
+          } else if (voxel.seed < 0.93) {
+            color = placeFlower(voxel, p);
+          } else {
+            color = placeStem(voxel, p);
+          }
+        } else if (voxel.role === "trunk") {
+          color = voxel.seed < 0.55 ? placeStem(voxel, p, 1.7) : placePad(voxel, p, 2.3);
+        } else if (voxel.role === "grass") {
+          color = placeWater(voxel, p);
+        } else if (voxel.role === "grassTuft") {
+          color = voxel.seed < 0.45 ? placeFlower(voxel, p, 3.1) : placeWater(voxel, p, 5.0);
+        } else if (voxel.role === "flower" || voxel.role === "mushroom") {
+          color = placeFlower(voxel, p, 2.7);
+        } else if (voxel.role === "underside") {
+          color = placeDeepWater(voxel, p);
+        } else if (voxel.role === "rock") {
+          p.x *= 1.18;
+          p.z *= 1.18;
+          p.y = Math.min(p.y * 0.42, waterY - 0.08);
+          color = new THREE.Color(pick(rng() < 0.5 ? stone : mud)).multiplyScalar(0.85);
         }
         return [p, color];
       });
