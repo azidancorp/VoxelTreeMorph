@@ -380,6 +380,7 @@
     <button type="button" data-variation="6">Baobab</button>
     <button type="button" data-variation="7">Mangrove</button>
     <button type="button" data-variation="8">Jacaranda</button>
+    <button type="button" data-variation="9">Banyan</button>
   </nav>
 
   <script type="module">
@@ -519,6 +520,7 @@
     variations[6] = makeBaobabMap();
     variations[7] = makeMangroveMap();
     variations[8] = makeJacarandaMap();
+    variations[9] = makeBanyanMap();
 
     const cube = new THREE.BoxGeometry(1, 1, 1);
     const material = new THREE.MeshStandardMaterial({
@@ -605,7 +607,7 @@
       hoverForce: 8.6,
       go: (index) => startMorph((index + variations.length) % variations.length),
       next: () => {
-        const order = [3, 0, 1, 2, 8, 4, 5, 6, 7];
+        const order = [3, 0, 1, 2, 8, 4, 5, 6, 7, 9];
         const next = order[(order.indexOf(activeVariation) + 1) % order.length];
         startMorph(next);
       },
@@ -1450,6 +1452,165 @@
       });
     }
 
+    function makeBanyanMap() {
+      const leafDeep = ["#0f3a1f", "#143f22", "#183f24", "#1c4a28", "#12351e", "#1f4f2a"];
+      const leafMid = ["#2f7137", "#367c40", "#3f8446", "#2a6534", "#458b4c", "#33763c"];
+      const leafLight = ["#6aa957", "#78b765", "#86c070", "#5e9e50", "#8ac875", "#70b060"];
+      const bark = ["#5a3a22", "#6a4428", "#4a301d", "#755033", "#3e2818", "#60402a"];
+      const barkLight = ["#967050", "#a47c58", "#b08a66", "#8a6548", "#bc946e"];
+      const barkDark = ["#2a1b12", "#332116", "#24170f", "#3a281a", "#1f140d"];
+      const rootBark = ["#6a4830", "#7a5438", "#5c3d28", "#8a6040", "#4a3020", "#9a7352"];
+      const grass = ["#2f7a36", "#3f8a42", "#4d984d", "#276a32", "#5aa658", "#377d3b"];
+      const soil = ["#4a2f1c", "#5c3a22", "#3a2618", "#6a452a", "#2e2015"];
+
+      const trunkPath = [
+        [0, 3.7, 0],
+        [-0.3, 6.2, 0.2],
+        [0.2, 8.8, -0.1],
+        [0.6, 11.4, 0.2],
+        [0.1, 13.5, 0]
+      ];
+
+      const limbs = [
+        { angle: -3.0, start: 0.36, length: 16.6, lift: 1.2, sag: 1.1, thick: 0.95 },
+        { angle: -2.52, start: 0.42, length: 14.8, lift: 2.1, sag: 0.85, thick: 0.78 },
+        { angle: -1.78, start: 0.5, length: 13.2, lift: 2.9, sag: 0.65, thick: 0.68 },
+        { angle: -0.95, start: 0.58, length: 15.0, lift: 2.5, sag: 0.7, thick: 0.72 },
+        { angle: -0.25, start: 0.4, length: 17.4, lift: 1.4, sag: 1.05, thick: 0.9 },
+        { angle: 0.46, start: 0.34, length: 16.2, lift: 1.6, sag: 1.0, thick: 0.88 },
+        { angle: 1.12, start: 0.48, length: 13.8, lift: 2.8, sag: 0.7, thick: 0.7 },
+        { angle: 1.86, start: 0.56, length: 15.2, lift: 2.3, sag: 0.75, thick: 0.72 },
+        { angle: 2.58, start: 0.38, length: 16.8, lift: 1.3, sag: 1.1, thick: 0.92 }
+      ];
+
+      const canopies = limbs.flatMap((limb, i) => {
+        const base = samplePath(trunkPath, limb.start);
+        return [0.55, 0.82, 1.0].map((along, j) => {
+          const side = Math.sin(i * 1.3 + j * 0.9) * 2.0;
+          const x = base.x + Math.cos(limb.angle) * limb.length * along + Math.cos(limb.angle + Math.PI / 2) * side;
+          const z = base.z + Math.sin(limb.angle) * limb.length * along + Math.sin(limb.angle + Math.PI / 2) * side;
+          return {
+            x,
+            z,
+            y: base.y + limb.lift * along + Math.sin(along * Math.PI) * 1.3 - limb.sag * along * along + 3.0 + j * 0.45,
+            rx: 3.6 + (i % 3) * 0.65 + j * 0.3,
+            ry: 1.8 + (j % 2) * 0.35,
+            rz: 3.1 + ((i + j) % 3) * 0.7
+          };
+        });
+      });
+      canopies.push({ x: 0.4, y: 16.7, z: 0.2, rx: 5.0, ry: 2.3, rz: 4.5 });
+
+      const aerialRoots = limbs.map((limb, i) => {
+        const base = samplePath(trunkPath, limb.start);
+        const along = 0.42 + (i % 4) * 0.15;
+        const side = Math.sin(i * 2.1) * 0.7;
+        const anchorX = base.x + Math.cos(limb.angle) * limb.length * along + Math.cos(limb.angle + Math.PI / 2) * side;
+        const anchorZ = base.z + Math.sin(limb.angle) * limb.length * along + Math.sin(limb.angle + Math.PI / 2) * side;
+        const anchorY = base.y + limb.lift * along + Math.sin(along * Math.PI) * 1.3 - limb.sag * along * along;
+        return {
+          x: anchorX,
+          y: anchorY,
+          z: anchorZ,
+          sway: 0.18 + (i % 3) * 0.07,
+          reach: Math.max(5.8, anchorY - 0.2)
+        };
+      });
+
+      const buttressRoots = Array.from({ length: 16 }, (_, i) => {
+        const angle = (i / 16) * Math.PI * 2 + 0.18 + Math.sin(i * 1.7) * 0.08;
+        return {
+          angle,
+          length: 5.0 + (i % 5) * 0.7,
+          width: 0.65 + (i % 4) * 0.15
+        };
+      });
+
+      return makeMap((voxel) => {
+        const p = voxel.base.clone();
+        let color = voxel.color.clone();
+        if (voxel.role === "leaf") {
+          const s = voxel.seed;
+          if (s < 0.16) {
+            const root = buttressRoots[Math.floor(s * buttressRoots.length * 13.0) % buttressRoots.length];
+            const along = (s * 61.0 + Math.abs(p.x) * 0.043 + p.y * 0.017) % 1;
+            const width = root.width * (1 - along * 0.62) + 0.18;
+            const side = Math.sin(s * 103.0 + p.z) * width;
+            p.x = Math.cos(root.angle) * root.length * along + Math.cos(root.angle + Math.PI / 2) * side + (rng() - 0.5) * width * 0.5;
+            p.z = Math.sin(root.angle) * root.length * along + Math.sin(root.angle + Math.PI / 2) * side + (rng() - 0.5) * width * 0.5;
+            p.y = 3.15 - along * 2.45 + Math.sin(along * Math.PI) * 0.55 + (rng() - 0.5) * 0.18;
+            color = new THREE.Color(pick(along < 0.18 ? barkLight : rootBark));
+          } else if (s < 0.44) {
+            const limb = limbs[Math.floor(s * limbs.length * 5.2) % limbs.length];
+            const along = (s * 37.0 + p.y * 0.045 + Math.abs(p.z) * 0.018) % 1;
+            const base = samplePath(trunkPath, limb.start);
+            const taper = limb.thick * (1 - along * 0.68) + 0.22;
+            const side = Math.sin(s * 92.0 + p.x) * taper;
+            const vertical = Math.cos(s * 61.0 + p.z) * taper * 0.58;
+            p.x = base.x + Math.cos(limb.angle) * limb.length * along + Math.cos(limb.angle + Math.PI / 2) * side + (rng() - 0.5) * taper * 0.5;
+            p.z = base.z + Math.sin(limb.angle) * limb.length * along + Math.sin(limb.angle + Math.PI / 2) * side + (rng() - 0.5) * taper * 0.5;
+            p.y = base.y + limb.lift * along + Math.sin(along * Math.PI) * 1.3 - limb.sag * along * along + vertical + (rng() - 0.5) * 0.16;
+            color = new THREE.Color(pick(along < 0.22 || Math.cos(limb.angle) > 0.25 ? barkLight : bark));
+          } else if (s < 0.58) {
+            const root = aerialRoots[Math.floor(s * aerialRoots.length * 7.0) % aerialRoots.length];
+            const drop = (s * 43.0 + p.y * 0.031 + Math.abs(p.x) * 0.017) % 1;
+            p.x = root.x + Math.sin(drop * Math.PI * 4 + s * 30.0) * root.sway + (rng() - 0.5) * 0.14;
+            p.z = root.z + Math.cos(drop * Math.PI * 3 + s * 25.0) * root.sway + (rng() - 0.5) * 0.14;
+            p.y = root.y - drop * root.reach + (rng() - 0.5) * 0.2;
+            color = new THREE.Color(pick(drop > 0.76 ? rootBark : barkDark));
+          } else {
+            const cluster = canopies[Math.floor((s * 131.0 + p.x * 0.11 + p.z * 0.17) % canopies.length)];
+            const a = s * Math.PI * 29.0 + p.z * 0.2;
+            const r = Math.sqrt((s * 19.3 + Math.abs(p.x) * 0.043) % 1);
+            const height = Math.sin(s * Math.PI * 23.0 + p.y * 0.4);
+            p.x = cluster.x + Math.cos(a) * r * cluster.rx + (rng() - 0.5) * 0.5;
+            p.z = cluster.z + Math.sin(a) * r * cluster.rz + (rng() - 0.5) * 0.5;
+            p.y = cluster.y + height * cluster.ry + (rng() - 0.5) * 0.38;
+            const palette = height > 0.45 ? leafLight : r > 0.72 ? leafMid : leafDeep;
+            color = new THREE.Color(pick(palette));
+          }
+        } else if (voxel.role === "trunk") {
+          const t = clamp((p.y - 5) / 9);
+          const curve = samplePath(trunkPath, t);
+          const ring = Math.atan2(p.z, Math.abs(p.x) > 0.01 ? p.x : 0.01);
+          const baseBias = (1 - t) * (1 - t);
+          const lobe = 1 + Math.sin(ring * 6 + t * 2.4) * 0.16 * (1 - t);
+          const flare = (3.65 - t * 1.35 + Math.sin(t * Math.PI) * 0.42 + baseBias * 0.75) * lobe;
+          p.x = curve.x + Math.cos(ring) * flare + (rng() - 0.5) * 0.22;
+          p.z = curve.z + Math.sin(ring) * flare * 0.96 + (rng() - 0.5) * 0.22;
+          p.y = curve.y - baseBias * 0.42 + (rng() - 0.5) * 0.24;
+          color = new THREE.Color(pick(Math.cos(ring) > -0.05 ? barkLight : bark));
+        } else if (voxel.role === "flower" || voxel.role === "mushroom" || voxel.role === "grassTuft") {
+          const root = aerialRoots[Math.floor(voxel.seed * aerialRoots.length * 3.0) % aerialRoots.length];
+          const drop = (voxel.seed * 17.0 + Math.abs(p.z) * 0.11) % 1;
+          p.x = root.x + Math.sin(drop * Math.PI * 5 + voxel.seed * 20.0) * (root.sway + 0.08) + (rng() - 0.5) * 0.12;
+          p.z = root.z + Math.cos(drop * Math.PI * 4 + voxel.seed * 19.0) * (root.sway + 0.08) + (rng() - 0.5) * 0.12;
+          p.y = root.y - drop * root.reach + (rng() - 0.5) * 0.16;
+          color = new THREE.Color(pick(rootBark));
+        } else if (voxel.role === "grass") {
+          p.x *= 1.35;
+          p.z *= 1.35;
+          p.y = Math.max(0, p.y) * 0.4;
+          color = new THREE.Color(pick(grass));
+        } else if (voxel.role === "underside") {
+          p.x *= 1.12;
+          p.z *= 1.12;
+          p.y *= 0.68;
+          color = new THREE.Color(pick(soil));
+        } else if (voxel.role === "rock") {
+          const root = buttressRoots[Math.floor(voxel.seed * buttressRoots.length * 2.0) % buttressRoots.length];
+          const along = 0.32 + ((voxel.seed * 29.0 + Math.abs(p.x) * 0.08) % 0.68);
+          const width = root.width * (1 - along * 0.5) + 0.22;
+          const side = Math.sin(voxel.seed * 72.0 + p.z) * width;
+          p.x = Math.cos(root.angle) * root.length * along + Math.cos(root.angle + Math.PI / 2) * side + (rng() - 0.5) * width * 0.45;
+          p.z = Math.sin(root.angle) * root.length * along + Math.sin(root.angle + Math.PI / 2) * side + (rng() - 0.5) * width * 0.45;
+          p.y = 2.7 - along * 2.25 + Math.sin(along * Math.PI) * 0.34 + (rng() - 0.5) * 0.16;
+          color = new THREE.Color(pick(rootBark)).multiplyScalar(0.9);
+        }
+        return [p, color];
+      });
+    }
+
     function makeMap(transform) {
       const positions = new Array(voxels.length);
       const colors = new Array(voxels.length);
@@ -1525,7 +1686,7 @@
         return;
       }
       if (now - lastMorphAt >= settings.cycleMs) {
-        const order = [3, 0, 1, 2, 8, 4, 5, 6, 7];
+        const order = [3, 0, 1, 2, 8, 4, 5, 6, 7, 9];
         const next = order[(order.indexOf(activeVariation) + 1) % order.length];
         startMorph(next);
       }
@@ -1657,7 +1818,8 @@
         ["#1b5028", "#143f20", "#d92d1a", "#ff8418", "#f5c518", "#205830"],
         ["#a87858", "#7a9a65", "#c8a050", "#ff9050", "#6a8a55", "#b88868"],
         ["#2e6e34", "#358040", "#5a9a52", "#1a3e22", "#7ac070", "#4a9ec0"],
-        ["#7b4cc4", "#9867ea", "#b184f4", "#c7a6ff", "#5c2c91", "#357a43"]
+        ["#7b4cc4", "#9867ea", "#b184f4", "#c7a6ff", "#5c2c91", "#357a43"],
+        ["#143f22", "#367c40", "#78b765", "#6a4428", "#967050", "#2f7137"]
       ];
       for (let i = 0; i < leafMax; i++) {
         resetLeaf(i, rng() * 6);
