@@ -1069,6 +1069,41 @@
             accent: { color: "#88d6c8", pulseBase: 2.0 }
           }
         }
+      }),
+      makeTreeVariation({
+        id: "dragon-blood",
+        label: "Dragon Blood",
+        map: makeDragonBloodMap,
+        cycleOrder: 14.2,
+        particlePalette: ["#a82820", "#7e1a14", "#c83020", "#5fa056", "#88c876", "#bca882"],
+        camera: { position: [13.5, 9, 28.8], target: [0, 3.0, 0], distance: 27.2, minDistance: 11.5, maxDistance: 36, rootScale: 0.48 },
+        uiAccent: {
+          panel: "rgba(22, 6, 4, 0.66)",
+          hover: "rgba(102, 26, 18, 0.72)",
+          button: "rgba(50, 12, 10, 0.6)",
+          border: "rgba(220, 120, 90, 0.24)",
+          buttonBorder: "rgba(220, 120, 90, 0.3)",
+          borderActive: "rgba(255, 180, 150, 0.64)",
+          text: "#f4d8c8",
+          muted: "#d49a82",
+          accent: "#e85a3c",
+          strong: "#a82018",
+          dark: "#1a0604",
+          glow: "rgba(220, 60, 40, 0.46)"
+        },
+        scene: {
+          clear: "#070302",
+          background: "radial-gradient(circle at 50% 47%, rgba(130, 36, 22, 0.32), rgba(48, 14, 10, 0.42) 42%, rgba(7, 3, 2, 0.98) 79%), #070302",
+          fog: { color: "#160604", density: 0.02 },
+          lighting: {
+            hemisphere: { sky: "#f6d4a0", ground: "#180806", intensity: 1.04 },
+            ambient: { color: "#d9a472", intensity: 0.44 },
+            key: { color: "#fbd8a4", intensity: 4.1, position: [5.4, 15.2, 5.2] },
+            fill: { color: "#6a8e64", intensity: 0.9 },
+            rim: { color: "#e83a22", pulseBase: 2.7 },
+            accent: { color: "#ff7a48", pulseBase: 2.1 }
+          }
+        }
       })
     ];
 
@@ -3560,6 +3595,236 @@
           p.z *= 1.18;
           p.y = Math.min(p.y * 0.42, waterY - 0.08);
           color = new THREE.Color(pick(rng() < 0.5 ? stone : mud)).multiplyScalar(0.85);
+        }
+        return [p, color];
+      });
+    }
+
+    function makeDragonBloodMap() {
+      const bloodDark = ["#3a0806", "#2a0604", "#480c08", "#1e0402", "#2e0604"];
+      const bloodMid = ["#6b1410", "#7e1a14", "#52120c", "#5a1410", "#62160e"];
+      const bloodBright = ["#9a2018", "#a82820", "#8c1c14", "#b8302a", "#922018"];
+      const sapResin = ["#c83020", "#d83a28", "#a82018", "#e44a30"];
+      const barkBase = ["#3e2818", "#2a1810", "#4a3220", "#1e1208"];
+      const barkMid = ["#5a3e28", "#6a4830", "#503624"];
+      const barkPale = ["#a08266", "#866850", "#b09578"];
+
+      const leafDeep = ["#1a3e22", "#143420", "#1f4a26", "#0e2c18", "#16381e"];
+      const leafMid = ["#2e6230", "#356c3a", "#3a7240", "#286234", "#326830"];
+      const leafLight = ["#5fa056", "#6cae5e", "#74b864", "#558a4c"];
+      const leafTip = ["#88c876", "#94d480", "#a0dc84"];
+      const seedHusk = ["#7a4220", "#5a3018", "#8c4c28"];
+
+      const grass = ["#5a6238", "#48522e", "#3e4628", "#6a7240"];
+      const litter = ["#3a2814", "#46301a", "#241a0e", "#54391f"];
+      const soil = ["#241808", "#1a1006", "#34200e", "#2a1a0c"];
+      const stone = ["#9a8a72", "#80725c", "#a89878", "#6a604c"];
+      const dust = ["#a8946c", "#bca882", "#8c7a58"];
+
+      const trunkBaseY = -0.4;
+      const trunkForkY = 8.0;
+      const trunkH = trunkForkY - trunkBaseY;
+
+      const trunkRadius = (t) => 0.6 + 1.55 * Math.pow(1 - t, 1.15);
+
+      const BRANCH_COUNT = 14;
+      const branches = [];
+      for (let i = 0; i < BRANCH_COUNT; i++) {
+        const angle = i * 2.39996 + 0.18;
+        const tierJitter = ((i * 0.71) % 1);
+        const reach = 6.6 + tierJitter * 1.9;
+        const rise = 5.6 + ((i * 1.31) % 1) * 1.4;
+        branches.push({
+          angle,
+          forkY: trunkForkY - 0.5 + ((i * 0.53) % 1) * 0.8,
+          forkR: 0.32 + ((i * 0.29) % 1) * 0.3,
+          midOut: reach * 0.5,
+          midUp: rise * 0.32,
+          tipOut: reach,
+          tipUp: rise,
+          baseR: 0.48 - (i % 3) * 0.05,
+          tipR: 0.12,
+          twist: 1.3 + (i % 5) * 0.42
+        });
+      }
+
+      const subBranches = [];
+      for (let i = 0; i < BRANCH_COUNT; i++) {
+        for (let k = 0; k < 2; k++) {
+          subBranches.push({
+            parentIdx: i,
+            startU: 0.6 + ((i + k) % 3) * 0.06,
+            addAngle: (k === 0 ? -1 : 1) * (0.34 + (k * 0.05)),
+            extraOut: 1.2 + (((i + k) * 0.31) % 1) * 0.9,
+            extraUp: 0.8 + (((i + k) * 0.27) % 1) * 0.7,
+            baseR: 0.16,
+            tipR: 0.06,
+            arcHeight: 0.18 + (((i + k) * 0.41) % 1) * 0.12
+          });
+        }
+      }
+
+      const branchPoint = (b, u) => {
+        const ang = b.angle;
+        const cosA = Math.cos(ang);
+        const sinA = Math.sin(ang);
+        const iu = 1 - u;
+        const outR = iu * iu * b.forkR + 2 * iu * u * b.midOut + u * u * b.tipOut;
+        const upY = iu * iu * 0 + 2 * iu * u * b.midUp + u * u * b.tipUp;
+        const twistPhase = u * Math.PI * b.twist + b.angle * 1.3;
+        const wobble = Math.sin(twistPhase) * 0.22 * u * (1 - u);
+        return {
+          x: cosA * outR + Math.cos(ang + Math.PI / 2) * wobble,
+          y: b.forkY + upY,
+          z: sinA * outR + Math.sin(ang + Math.PI / 2) * wobble
+        };
+      };
+
+      const subBranchPoint = (s, u) => {
+        const parent = branches[s.parentIdx];
+        const start = branchPoint(parent, s.startU);
+        const ang2 = parent.angle + s.addAngle;
+        const tipX = start.x + Math.cos(ang2) * s.extraOut;
+        const tipZ = start.z + Math.sin(ang2) * s.extraOut;
+        const tipY = start.y + s.extraUp;
+        const arc = Math.sin(u * Math.PI) * s.arcHeight;
+        return {
+          x: start.x + (tipX - start.x) * u,
+          y: start.y + (tipY - start.y) * u + arc,
+          z: start.z + (tipZ - start.z) * u
+        };
+      };
+
+      const placeTrunkVoxel = (voxel, p, offset = 0) => {
+        const tRaw = (voxel.seed * 1.29 + Math.abs(voxel.base.y) * 0.046 + Math.abs(voxel.base.x) * 0.013 + offset * 0.11) % 1;
+        const t = clamp((tRaw + 1) % 1);
+        const yt = trunkBaseY + t * trunkH;
+        const ringSeed = voxel.seed * 11.0 + offset * 1.7;
+        const baseAngle = Math.atan2(voxel.base.z, Math.abs(voxel.base.x) > 0.01 ? voxel.base.x : 0.01);
+        const ring = baseAngle + ringSeed;
+        const taper = trunkRadius(t);
+        const fold = Math.sin(ring * 6.0 + yt * 0.21) * 0.09;
+        const drip = Math.sin(ring * 2.1 + yt * 0.45 + voxel.seed * 6.0);
+        const radius = taper + fold + (rng() - 0.5) * 0.08;
+        p.x = Math.cos(ring) * radius + (rng() - 0.5) * 0.06;
+        p.z = Math.sin(ring) * radius + (rng() - 0.5) * 0.06;
+        p.y = yt + (rng() - 0.5) * 0.18;
+        const r = rng();
+        if (drip > 0.82 && r < 0.42) return new THREE.Color(pick(sapResin));
+        if (r < 0.5) return new THREE.Color(pick(bloodMid));
+        if (r < 0.72) return new THREE.Color(pick(bloodDark));
+        if (r < 0.85) return new THREE.Color(pick(bloodBright));
+        if (r < 0.94) return new THREE.Color(pick(barkBase));
+        if (r < 0.985) return new THREE.Color(pick(barkMid));
+        return new THREE.Color(pick(barkPale));
+      };
+
+      const branchIndex = (voxel, offset = 0) => {
+        const f = ((voxel.seed * 71.0 + offset * 3.7) % 1 + 1) % 1;
+        return Math.floor(f * branches.length) % branches.length;
+      };
+
+      const subBranchIndex = (voxel, offset = 0) => {
+        const f = ((voxel.seed * 91.0 + offset * 5.3) % 1 + 1) % 1;
+        return Math.floor(f * subBranches.length) % subBranches.length;
+      };
+
+      const placeBranchCore = (voxel, p, offset = 0) => {
+        const u = ((voxel.seed * 43.0 + offset * 0.23) % 1 + 1) % 1;
+        if (rng() < 0.4) {
+          const s = subBranches[subBranchIndex(voxel, offset)];
+          const c = subBranchPoint(s, u);
+          const radius = s.tipR + (s.baseR - s.tipR) * Math.pow(1 - u, 1.2);
+          const ringAngle = (voxel.seed * 19.0 + u * 4.7 + offset * 1.3) * Math.PI * 2;
+          p.x = c.x + Math.cos(ringAngle) * radius + (rng() - 0.5) * 0.08;
+          p.z = c.z + Math.sin(ringAngle) * radius + (rng() - 0.5) * 0.08;
+          p.y = c.y + (rng() - 0.5) * 0.08;
+        } else {
+          const b = branches[branchIndex(voxel, offset + 1.1)];
+          const c = branchPoint(b, u);
+          const radius = b.tipR + (b.baseR - b.tipR) * Math.pow(1 - u, 1.2);
+          const ringAngle = (voxel.seed * 19.0 + u * 4.7 + offset * 1.3) * Math.PI * 2;
+          p.x = c.x + Math.cos(ringAngle) * radius + (rng() - 0.5) * 0.08;
+          p.z = c.z + Math.sin(ringAngle) * radius + (rng() - 0.5) * 0.08;
+          p.y = c.y + (rng() - 0.5) * 0.08;
+        }
+        const r = rng();
+        if (r < 0.5) return new THREE.Color(pick(bloodMid));
+        if (r < 0.78) return new THREE.Color(pick(bloodDark));
+        return new THREE.Color(pick(barkMid));
+      };
+
+      const placeRosette = (voxel, p, offset = 0) => {
+        const useSubTip = ((voxel.seed * 13.7 + offset * 0.17) % 1) < 0.55;
+        let tipPos;
+        if (useSubTip) {
+          const s = subBranches[subBranchIndex(voxel, offset + 0.3)];
+          tipPos = subBranchPoint(s, 1.0);
+        } else {
+          const b = branches[branchIndex(voxel, offset)];
+          tipPos = branchPoint(b, 1.0);
+        }
+        const polar = voxel.seed * Math.PI * 17 + offset * 2.3;
+        const azim = ((voxel.seed * 29.0 + offset * 0.41) % 1 + 1) % 1;
+        const elevRaw = Math.pow(azim, 0.55);
+        const sinE = Math.sqrt(Math.max(0, 1 - elevRaw * elevRaw));
+        const rRaw = ((voxel.seed * 17.7 + offset * 0.31) % 1 + 1) % 1;
+        const reach = 0.45 + Math.pow(rRaw, 0.5) * 1.5;
+        p.x = tipPos.x + Math.cos(polar) * sinE * reach * 1.1 + (rng() - 0.5) * 0.14;
+        p.z = tipPos.z + Math.sin(polar) * sinE * reach * 1.1 + (rng() - 0.5) * 0.14;
+        p.y = tipPos.y + elevRaw * reach * 0.85 + (rng() - 0.5) * 0.14;
+        const tipness = clamp((reach - 0.45) / 1.5);
+        const upness = clamp(elevRaw);
+        const r = rng();
+        if (r < 0.04) return new THREE.Color(pick(seedHusk));
+        if (upness > 0.7 && tipness > 0.6 && r < 0.5) return new THREE.Color(pick(leafTip));
+        if (tipness > 0.55 && r < 0.42) return new THREE.Color(pick(leafLight));
+        if (r < 0.62) return new THREE.Color(pick(leafMid));
+        return new THREE.Color(pick(leafDeep));
+      };
+
+      return makeMap((voxel) => {
+        const p = voxel.base.clone();
+        let color = voxel.color.clone();
+        if (voxel.role === "trunk") {
+          color = placeTrunkVoxel(voxel, p);
+        } else if (voxel.role === "leaf") {
+          if (voxel.seed < 0.06) {
+            color = placeTrunkVoxel(voxel, p, 1.3);
+          } else if (voxel.seed < 0.32) {
+            color = placeBranchCore(voxel, p);
+          } else {
+            color = placeRosette(voxel, p);
+          }
+        } else if (voxel.role === "grass") {
+          p.x *= 1.18;
+          p.z *= 1.18;
+          p.y = Math.max(0, p.y) * 0.32;
+          const r = rng();
+          color = new THREE.Color(pick(r < 0.4 ? grass : r < 0.75 ? litter : dust));
+        } else if (voxel.role === "grassTuft") {
+          p.x *= 1.22;
+          p.z *= 1.22;
+          p.y = 0.18 + Math.max(0, p.y) * 0.26;
+          color = new THREE.Color(pick(rng() < 0.45 ? grass : dust));
+        } else if (voxel.role === "underside") {
+          p.x *= 0.98;
+          p.z *= 0.98;
+          p.y = -0.4 + p.y * 0.34;
+          color = new THREE.Color(pick(soil));
+        } else if (voxel.role === "rock") {
+          p.x *= 1.08;
+          p.z *= 1.08;
+          p.y = Math.min(p.y, 0.45);
+          color = new THREE.Color(pick(rng() < 0.62 ? stone : litter));
+        } else if (voxel.role === "flower" || voxel.role === "mushroom") {
+          p.x *= 1.12;
+          p.z *= 1.12;
+          p.y = 0.15 + Math.max(0, p.y) * 0.2;
+          const r = rng();
+          if (r < 0.5) color = new THREE.Color(pick(bloodBright));
+          else if (r < 0.82) color = new THREE.Color(pick(sapResin));
+          else color = new THREE.Color(pick(leafMid));
         }
         return [p, color];
       });
