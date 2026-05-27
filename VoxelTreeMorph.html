@@ -474,12 +474,11 @@
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2(9999, 9999);
     pointer.lastMove = -Infinity;
-    const hoverPlane = new THREE.Plane();
-    const hoverPoint = new THREE.Vector3(9999, 9999, 9999);
     const localHoverPoint = new THREE.Vector3(9999, 9999, 9999);
-    const worldTreeCenter = new THREE.Vector3();
+    const localRay = new THREE.Ray();
+    const localViewOut = new THREE.Vector3();
+    const inverseRootMatrix = new THREE.Matrix4();
     const treeCenter = new THREE.Vector3(0, 8.3, 0);
-    const cameraDir = new THREE.Vector3();
     const box = new THREE.Box3();
 
     const roles = {
@@ -506,6 +505,7 @@
     let lastMorphAt = performance.now();
     let suppressAutoUntil = 0;
     let hoverActive = false;
+    let hoverDepth = 0;
 
     buildBaseVoxels();
 
@@ -2119,19 +2119,126 @@
       }
     }
 
-    function updateHover(dt, now) {
-      raycaster.setFromCamera(pointer, camera);
-      camera.getWorldDirection(cameraDir);
-      root.updateMatrixWorld(true);
-      worldTreeCenter.copy(treeCenter);
-      root.localToWorld(worldTreeCenter);
-      hoverPlane.setFromNormalAndCoplanarPoint(cameraDir.clone().negate(), worldTreeCenter);
-      const hit = raycaster.ray.intersectPlane(hoverPlane, hoverPoint);
-      if (hit) {
-        localHoverPoint.copy(hoverPoint);
-        root.worldToLocal(localHoverPoint);
+    function resolveHoverTarget() {
+      if (pointer.lastMove === -Infinity || Math.abs(pointer.x) > 1.1 || Math.abs(pointer.y) > 1.1) {
+        return false;
       }
-      hoverActive = Boolean(hit && localHoverPoint.distanceTo(treeCenter) < 18 && pointer.lastMove > -Infinity);
+
+      raycaster.setFromCamera(pointer, camera);
+      root.updateMatrixWorld(true);
+      inverseRootMatrix.copy(root.matrixWorld).invert();
+      localRay.copy(raycaster.ray).applyMatrix4(inverseRootMatrix);
+      localViewOut.copy(localRay.direction).multiplyScalar(-1);
+
+      const ox = localRay.origin.x;
+      const oy = localRay.origin.y;
+      const oz = localRay.origin.z;
+      const dx = localRay.direction.x;
+      const dy = localRay.direction.y;
+      const dz = localRay.direction.z;
+      const magnetRadius = Math.max(1.15, Math.min(settings.hoverRadius * 0.42, 4.25));
+      let directDepth = Infinity;
+      let directIndex = -1;
+      let nearestDepth = 0;
+      let nearestEdgeDistance = Infinity;
+      let nearestScore = Infinity;
+
+      for (let i = 0; i < voxels.length; i++) {
+        const voxel = voxels[i];
+        const current = voxel.current;
+        const jitter = voxel.jitter;
+        const cx = current.x + jitter.x;
+        const cy = current.y + jitter.y;
+        const cz = current.z + jitter.z;
+        const half = voxel.scale * 0.56;
+        const hitDepth = intersectVoxelBox(ox, oy, oz, dx, dy, dz, cx, cy, cz, half);
+        if (hitDepth < directDepth) {
+          directDepth = hitDepth;
+          directIndex = i;
+        }
+
+        const toX = cx - ox;
+        const toY = cy - oy;
+        const toZ = cz - oz;
+        const depth = toX * dx + toY * dy + toZ * dz;
+        if (depth <= 0) continue;
+
+        const closestX = ox + dx * depth;
+        const closestY = oy + dy * depth;
+        const closestZ = oz + dz * depth;
+        const rx = cx - closestX;
+        const ry = cy - closestY;
+        const rz = cz - closestZ;
+        const edgeDistance = Math.max(0, Math.sqrt(rx * rx + ry * ry + rz * rz) - half);
+        const score = edgeDistance * edgeDistance + depth * 0.0015;
+        if (score < nearestScore) {
+          nearestScore = score;
+          nearestDepth = depth;
+          nearestEdgeDistance = edgeDistance;
+        }
+      }
+
+      if (directIndex !== -1) {
+        hoverDepth = directDepth + Math.min(voxels[directIndex].scale * 0.45, settings.hoverRadius * 0.08);
+      } else if (nearestEdgeDistance <= magnetRadius) {
+        hoverDepth = nearestDepth;
+      } else {
+        return false;
+      }
+
+      localHoverPoint.copy(localRay.origin).addScaledVector(localRay.direction, hoverDepth);
+      return localHoverPoint.distanceTo(treeCenter) < 22;
+    }
+
+    function intersectVoxelBox(ox, oy, oz, dx, dy, dz, cx, cy, cz, half) {
+      let tNear = -Infinity;
+      let tFar = Infinity;
+      let min = cx - half;
+      let max = cx + half;
+
+      if (Math.abs(dx) < 1e-6) {
+        if (ox < min || ox > max) return Infinity;
+      } else {
+        let t1 = (min - ox) / dx;
+        let t2 = (max - ox) / dx;
+        if (t1 > t2) [t1, t2] = [t2, t1];
+        tNear = Math.max(tNear, t1);
+        tFar = Math.min(tFar, t2);
+        if (tNear > tFar) return Infinity;
+      }
+
+      min = cy - half;
+      max = cy + half;
+      if (Math.abs(dy) < 1e-6) {
+        if (oy < min || oy > max) return Infinity;
+      } else {
+        let t1 = (min - oy) / dy;
+        let t2 = (max - oy) / dy;
+        if (t1 > t2) [t1, t2] = [t2, t1];
+        tNear = Math.max(tNear, t1);
+        tFar = Math.min(tFar, t2);
+        if (tNear > tFar) return Infinity;
+      }
+
+      min = cz - half;
+      max = cz + half;
+      if (Math.abs(dz) < 1e-6) {
+        if (oz < min || oz > max) return Infinity;
+      } else {
+        let t1 = (min - oz) / dz;
+        let t2 = (max - oz) / dz;
+        if (t1 > t2) [t1, t2] = [t2, t1];
+        tNear = Math.max(tNear, t1);
+        tFar = Math.min(tFar, t2);
+        if (tNear > tFar) return Infinity;
+      }
+
+      if (tFar < 0) return Infinity;
+      return Math.max(tNear, 0);
+    }
+
+    function updateHover(dt, now) {
+      hoverActive = resolveHoverTarget();
       const blend = 1 - Math.exp(-(hoverActive ? 8 : 2.5) * dt);
 
       for (let i = 0; i < voxels.length; i++) {
@@ -2141,20 +2248,32 @@
         let tz = 0;
 
         if (hoverActive) {
-          const dx = current.x - localHoverPoint.x;
-          const dy = current.y - localHoverPoint.y;
-          const dz = current.z - localHoverPoint.z;
-          const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+          const toX = current.x - localRay.origin.x;
+          const toY = current.y - localRay.origin.y;
+          const toZ = current.z - localRay.origin.z;
+          const depth = toX * localRay.direction.x + toY * localRay.direction.y + toZ * localRay.direction.z;
+          const closestX = localRay.origin.x + localRay.direction.x * depth;
+          const closestY = localRay.origin.y + localRay.direction.y * depth;
+          const closestZ = localRay.origin.z + localRay.direction.z * depth;
+          const radialX = current.x - closestX;
+          const radialY = current.y - closestY;
+          const radialZ = current.z - closestZ;
+          const depthDelta = depth - hoverDepth;
+          const radialSq = radialX * radialX + radialY * radialY + radialZ * radialZ;
+          const distance = Math.sqrt(radialSq + depthDelta * depthDelta * 0.58);
           const radius = settings.hoverRadius;
-          if (distance < radius && distance > 0.01) {
+          if (distance < radius) {
             const intensity = 1 - distance / radius;
             const force = intensity * intensity * intensity * settings.hoverForce;
-            const inv = 1 / distance;
             const rand = randDirs[i];
             const wave = 1 + (Math.sin(now * 0.003 + current.x * 1.3 + current.y * 0.7 + current.z * 1.1) * 0.15) * intensity;
-            const vx = dx * inv * 0.66 + rand.x * 0.34;
-            const vy = dy * inv * 0.66 + rand.y * 0.34;
-            const vz = dz * inv * 0.66 + rand.z * 0.34;
+            const radialLen = Math.sqrt(radialSq);
+            const nearRay = 1 - clamp(radialLen / Math.max(radius * 0.35, 0.001));
+            const depthPush = clamp(depthDelta / Math.max(radius, 0.001), -1, 1) * 0.18;
+            const lift = 0.34 + nearRay * 0.55;
+            const vx = radialX * 0.82 + localViewOut.x * lift + localRay.direction.x * depthPush + rand.x * 0.22;
+            const vy = radialY * 0.82 + localViewOut.y * lift + localRay.direction.y * depthPush + rand.y * 0.22;
+            const vz = radialZ * 0.82 + localViewOut.z * lift + localRay.direction.z * depthPush + rand.z * 0.22;
             const len = Math.sqrt(vx * vx + vy * vy + vz * vz) || 1;
             tx = (vx / len) * force * wave;
             ty = (vy / len) * force * wave;
