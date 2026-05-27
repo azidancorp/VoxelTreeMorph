@@ -504,6 +504,7 @@
     let morphFromColors = null;
     let lastMorphAt = performance.now();
     let suppressAutoUntil = 0;
+    let resumeRotateOnPointerRelease = false;
     let hoverActive = false;
     let hoverDepth = 0;
 
@@ -601,8 +602,11 @@
 
     renderer.domElement.addEventListener("pointermove", onPointerMove, { passive: true });
     renderer.domElement.addEventListener("pointerleave", onPointerLeave, { passive: true });
-    renderer.domElement.addEventListener("pointerdown", pauseAfterInteraction, { passive: true });
+    renderer.domElement.addEventListener("pointerdown", pausePointerInteraction, { passive: true });
     renderer.domElement.addEventListener("wheel", pauseAfterInteraction, { passive: true });
+    window.addEventListener("pointerup", resumeAutoRotateAfterPointerRelease, { passive: true });
+    window.addEventListener("pointercancel", resumeAutoRotateAfterPointerRelease, { passive: true });
+    controls.addEventListener("end", resumeAutoRotateAfterPointerRelease);
     window.addEventListener("resize", resize, { passive: true });
     resize();
 
@@ -2490,6 +2494,17 @@
       pointer.x = 9999;
       pointer.y = 9999;
       pointer.lastMove = -Infinity;
+    }
+
+    function pausePointerInteraction() {
+      resumeRotateOnPointerRelease = true;
+      pauseAfterInteraction();
+    }
+
+    function resumeAutoRotateAfterPointerRelease() {
+      if (!resumeRotateOnPointerRelease) return;
+      resumeRotateOnPointerRelease = false;
+      if (settings.autoRotate) controls.autoRotate = true;
     }
 
     function pauseAfterInteraction() {
