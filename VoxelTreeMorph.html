@@ -1,0 +1,1695 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VoxelTreeMorph</title>
+  <link rel="icon" href="data:,">
+  <style>
+    :root {
+      color-scheme: dark;
+      --film-w: 552;
+      --film-h: 720;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #050403;
+      font-family: system-ui, sans-serif;
+    }
+
+    body {
+      display: grid;
+      place-items: center;
+    }
+
+    #stage {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      isolation: isolate;
+      background:
+        radial-gradient(circle at 50% 48%, rgba(116, 73, 43, 0.32), rgba(34, 20, 11, 0.38) 39%, rgba(6, 4, 2, 0.98) 78%),
+        #050403;
+      cursor: crosshair;
+    }
+
+    #stage::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 4;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 50% 45%, transparent 0 43%, rgba(0, 0, 0, 0.05) 68%, rgba(0, 0, 0, 0.34) 100%),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.12), transparent 21%, transparent 79%, rgba(0, 0, 0, 0.16));
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .grain {
+      position: absolute;
+      inset: -3%;
+      z-index: 5;
+      pointer-events: none;
+      opacity: 0.075;
+      background-image:
+        radial-gradient(circle at 10% 20%, #fff 0 0.5px, transparent 0.8px),
+        radial-gradient(circle at 70% 40%, #fff 0 0.45px, transparent 0.75px),
+        radial-gradient(circle at 50% 90%, #fff 0 0.35px, transparent 0.7px);
+      background-size: 52px 57px, 71px 63px, 43px 49px;
+      animation: grainDrift 1.7s steps(2, end) infinite;
+    }
+
+    .fallback {
+      position: absolute;
+      inset: 0;
+      z-index: 9;
+      display: grid;
+      place-items: center;
+      padding: 32px;
+      background: #050403;
+      color: #d7c1a2;
+      text-align: center;
+      line-height: 1.45;
+      visibility: hidden;
+    }
+
+    .no-webgl .fallback {
+      visibility: visible;
+    }
+
+    @keyframes grainDrift {
+      from { transform: translate3d(0, 0, 0); }
+      to { transform: translate3d(-2%, 2%, 0); }
+    }
+
+    #picker {
+      position: fixed;
+      bottom: 22px;
+      right: 22px;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 14px;
+      border-radius: 6px;
+      background: rgba(12, 8, 5, 0.6);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(220, 180, 130, 0.18);
+      box-shadow: 0 6px 30px rgba(0, 0, 0, 0.4);
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      min-width: 140px;
+    }
+
+    #picker button {
+      appearance: none;
+      border: 1px solid rgba(220, 180, 130, 0.22);
+      background: rgba(40, 26, 16, 0.55);
+      color: #e8d2b0;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font: inherit;
+      text-align: left;
+      transition: background 160ms ease, color 160ms ease, border-color 160ms ease, transform 120ms ease;
+    }
+
+    #picker button:hover {
+      background: rgba(80, 50, 28, 0.7);
+      border-color: rgba(255, 200, 140, 0.45);
+    }
+
+    #picker button:active {
+      transform: translateY(1px);
+    }
+
+    #picker button.active {
+      background: linear-gradient(180deg, #ffb766, #d97a30);
+      color: #1a0f06;
+      border-color: rgba(255, 220, 170, 0.6);
+      box-shadow: 0 0 12px rgba(255, 140, 60, 0.45);
+    }
+
+    #settings {
+      position: fixed;
+      top: 22px;
+      right: 22px;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 14px 16px;
+      border-radius: 6px;
+      background: rgba(12, 8, 5, 0.6);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(220, 180, 130, 0.18);
+      box-shadow: 0 6px 30px rgba(0, 0, 0, 0.4);
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      width: 220px;
+      max-height: calc(100vh - 44px);
+      overflow-y: auto;
+      color: #e8d2b0;
+    }
+
+    #settings h3 {
+      margin: 0 0 2px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #d4a874;
+      opacity: 0.85;
+    }
+
+    #settings label {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 11px;
+    }
+
+    #settings .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    #settings .row span:last-child {
+      color: #ffb766;
+      font-variant-numeric: tabular-nums;
+      font-size: 11px;
+    }
+
+    #settings input[type="range"] {
+      appearance: none;
+      width: 100%;
+      height: 4px;
+      background: rgba(220, 180, 130, 0.22);
+      border-radius: 2px;
+      outline: none;
+      margin: 0;
+    }
+
+    #settings input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: linear-gradient(180deg, #ffb766, #d97a30);
+      border: 1px solid rgba(255, 220, 170, 0.7);
+      cursor: pointer;
+      box-shadow: 0 0 6px rgba(255, 140, 60, 0.45);
+    }
+
+    #settings input[type="range"]::-moz-range-thumb {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: linear-gradient(180deg, #ffb766, #d97a30);
+      border: 1px solid rgba(255, 220, 170, 0.7);
+      cursor: pointer;
+      box-shadow: 0 0 6px rgba(255, 140, 60, 0.45);
+    }
+
+    #settings .toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    #settings .toggle input {
+      appearance: none;
+      width: 28px;
+      height: 16px;
+      border-radius: 8px;
+      background: rgba(220, 180, 130, 0.22);
+      position: relative;
+      cursor: pointer;
+      transition: background 160ms ease;
+    }
+
+    #settings .toggle input::after {
+      content: "";
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #e8d2b0;
+      transition: left 160ms ease, background 160ms ease;
+    }
+
+    #settings .toggle input:checked {
+      background: linear-gradient(180deg, #ffb766, #d97a30);
+    }
+
+    #settings .toggle input:checked::after {
+      left: 14px;
+      background: #1a0f06;
+    }
+  </style>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <main id="stage" aria-label="interactive voxel tree morph animation">
+    <div class="fallback">This browser needs WebGL to render the voxel tree.</div>
+    <div class="grain" aria-hidden="true"></div>
+  </main>
+
+  <section id="settings" aria-label="scene controls">
+    <h3>Controls</h3>
+    <label>
+      <div class="row"><span>Particle density</span><span data-out="dustCount">3176</span></div>
+      <input type="range" min="0" max="6000" step="50" value="3176" data-setting="dustCount">
+    </label>
+    <label>
+      <div class="row"><span>Falling leaves</span><span data-out="leafCount">42</span></div>
+      <input type="range" min="0" max="200" step="2" value="42" data-setting="leafCount">
+    </label>
+    <label>
+      <div class="row"><span>Cycle time (s)</span><span data-out="cycleMs">5.0</span></div>
+      <input type="range" min="1500" max="20000" step="100" value="5000" data-setting="cycleMs">
+    </label>
+    <label>
+      <div class="row"><span>Morph speed (s)</span><span data-out="morphMs">1.9</span></div>
+      <input type="range" min="400" max="6000" step="100" value="1900" data-setting="morphMs">
+    </label>
+    <label>
+      <div class="row"><span>Explode radius</span><span data-out="hoverRadius">7.2</span></div>
+      <input type="range" min="1" max="20" step="0.1" value="7.2" data-setting="hoverRadius">
+    </label>
+    <label>
+      <div class="row"><span>Explode force</span><span data-out="hoverForce">8.6</span></div>
+      <input type="range" min="0" max="30" step="0.1" value="8.6" data-setting="hoverForce">
+    </label>
+    <label>
+      <div class="row"><span>Rotate speed</span><span data-out="rotateSpeed">0.38</span></div>
+      <input type="range" min="0" max="3" step="0.02" value="0.38" data-setting="rotateSpeed">
+    </label>
+    <label class="toggle">
+      <span>Auto rotate</span>
+      <input type="checkbox" checked data-setting="autoRotate">
+    </label>
+    <label class="toggle">
+      <span>Auto morph</span>
+      <input type="checkbox" checked data-setting="autoMorph">
+    </label>
+  </section>
+
+  <nav id="picker" aria-label="tree variation picker">
+    <button type="button" data-variation="0">Maple</button>
+    <button type="button" data-variation="1">Winter</button>
+    <button type="button" data-variation="2">Sakura</button>
+    <button type="button" data-variation="3">Bonsai</button>
+    <button type="button" data-variation="4">Oak</button>
+    <button type="button" data-variation="5">Fruit</button>
+    <button type="button" data-variation="6">Baobab</button>
+    <button type="button" data-variation="7">Mangrove</button>
+  </nav>
+
+  <script type="module">
+    import * as THREE from "three";
+    import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+    const settings = {
+      dustCount: 3176,
+      leafCount: 42,
+      cycleMs: 5000,
+      morphMs: 1900,
+      hoverRadius: 7.2,
+      hoverForce: 8.6,
+      rotateSpeed: 0.38,
+      autoRotate: true,
+      autoMorph: true
+    };
+
+    const stage = document.querySelector("#stage");
+    const renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      alpha: false,
+      powerPreference: "high-performance"
+    });
+
+    if (!renderer.capabilities.isWebGL2 && !renderer.capabilities.isWebGL) {
+      document.body.classList.add("no-webgl");
+    }
+
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+    renderer.setSize(stage.clientWidth, stage.clientHeight, false);
+    renderer.setClearColor(0x050403, 1);
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.25;
+    renderer.shadowMap.enabled = false;
+    stage.prepend(renderer.domElement);
+
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x100906, 0.019);
+
+    const camera = new THREE.PerspectiveCamera(40, 1, 1, 90);
+    camera.position.set(14, 13, 30);
+    camera.lookAt(0, 3.3, 0);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.055;
+    controls.enablePan = false;
+    controls.autoRotate = settings.autoRotate;
+    controls.autoRotateSpeed = settings.rotateSpeed;
+    controls.minDistance = 13;
+    controls.maxDistance = 36;
+    controls.target.set(0, 3.2, 0);
+
+    scene.add(new THREE.HemisphereLight(0xffd8a8, 0x1b0f08, 1.05));
+    scene.add(new THREE.AmbientLight(0xffc090, 0.48));
+
+    const key = new THREE.DirectionalLight(0xffd0a0, 4.2);
+    key.position.set(5.6, 14, 5.4);
+    key.castShadow = false;
+    scene.add(key);
+
+    const fill = new THREE.DirectionalLight(0x6d9a58, 1.0);
+    fill.position.set(-5, 8, -3);
+    scene.add(fill);
+
+    const rim = new THREE.PointLight(0xff6f35, 4.2, 28, 1.6);
+    rim.position.set(-4, 9, -5);
+    scene.add(rim);
+
+    const accent = new THREE.PointLight(0xff9c5a, 3.3, 22, 1.6);
+    accent.position.set(4, 8, 4);
+    scene.add(accent);
+
+    const root = new THREE.Group();
+    root.position.set(0.1, -0.6, 0);
+    root.rotation.y = -0.32;
+    root.scale.setScalar(0.55);
+    scene.add(root);
+
+    const rng = mulberry32(0xB05A1);
+    const tempObj = new THREE.Object3D();
+    const tempColor = new THREE.Color();
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2(9999, 9999);
+    pointer.lastMove = -Infinity;
+    const hoverPlane = new THREE.Plane();
+    const hoverPoint = new THREE.Vector3(9999, 9999, 9999);
+    const localHoverPoint = new THREE.Vector3(9999, 9999, 9999);
+    const worldTreeCenter = new THREE.Vector3();
+    const treeCenter = new THREE.Vector3(0, 8.3, 0);
+    const cameraDir = new THREE.Vector3();
+    const box = new THREE.Box3();
+
+    const roles = {
+      underside: [],
+      grass: [],
+      rock: [],
+      trunk: [],
+      leaf: [],
+      flower: [],
+      grassTuft: [],
+      mushroom: []
+    };
+
+    const voxels = [];
+    const variations = [];
+    const offsets = [];
+    const randDirs = [];
+    let activeVariation = 0;
+    let targetVariation = 0;
+    let morphing = false;
+    let morphStarted = 0;
+    let morphFromPositions = null;
+    let morphFromColors = null;
+    let lastMorphAt = performance.now();
+    let suppressAutoUntil = 0;
+    let hoverActive = false;
+
+    buildBaseVoxels();
+
+    for (const voxel of voxels) {
+      box.expandByPoint(voxel.base);
+      offsets.push(new THREE.Vector3());
+      randDirs.push(randomUnitVector());
+    }
+
+    box.getCenter(treeCenter);
+    treeCenter.y += 2.3;
+    variations[0] = makeAutumnMap();
+    variations[1] = makeWinterMap();
+    variations[2] = makeBlossomMap();
+    variations[3] = makeAncientMap();
+    variations[4] = makeOakMap();
+    variations[5] = makeFruitMap();
+    variations[6] = makeBaobabMap();
+    variations[7] = makeMangroveMap();
+
+    const cube = new THREE.BoxGeometry(1, 1, 1);
+    const material = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      roughness: 0.82,
+      metalness: 0.0
+    });
+    const mesh = new THREE.InstancedMesh(cube, material, voxels.length);
+    mesh.castShadow = false;
+    mesh.receiveShadow = false;
+    mesh.frustumCulled = false;
+    mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    root.add(mesh);
+
+    applyVariation(activeVariation, true);
+    buildParticles();
+
+    const pickerButtons = Array.from(document.querySelectorAll("#picker button"));
+    function syncPicker() {
+      for (const btn of pickerButtons) {
+        const i = Number(btn.dataset.variation);
+        btn.classList.toggle("active", i === (morphing ? targetVariation : activeVariation));
+      }
+    }
+    for (const btn of pickerButtons) {
+      btn.addEventListener("click", () => {
+        const i = Number(btn.dataset.variation);
+        pauseAfterInteraction();
+        startMorph(i);
+        syncPicker();
+      });
+    }
+    syncPicker();
+
+    const settingFormatters = {
+      cycleMs: (v) => (v / 1000).toFixed(1),
+      morphMs: (v) => (v / 1000).toFixed(1),
+      hoverRadius: (v) => Number(v).toFixed(1),
+      hoverForce: (v) => Number(v).toFixed(1),
+      rotateSpeed: (v) => Number(v).toFixed(2),
+      dustCount: (v) => String(Math.round(v)),
+      leafCount: (v) => String(Math.round(v))
+    };
+
+    function syncSettingOutput(key, value) {
+      const out = document.querySelector(`#settings [data-out="${key}"]`);
+      if (out) out.textContent = (settingFormatters[key] || ((v) => String(v)))(value);
+    }
+
+    for (const input of document.querySelectorAll("#settings [data-setting]")) {
+      const key = input.dataset.setting;
+      if (input.type === "checkbox") {
+        input.checked = Boolean(settings[key]);
+        input.addEventListener("change", () => {
+          settings[key] = input.checked;
+          if (key === "autoRotate") controls.autoRotate = input.checked;
+        });
+      } else {
+        input.value = settings[key];
+        syncSettingOutput(key, settings[key]);
+        input.addEventListener("input", () => {
+          const value = Number(input.value);
+          settings[key] = value;
+          syncSettingOutput(key, value);
+          if (key === "rotateSpeed") controls.autoRotateSpeed = value;
+        });
+      }
+    }
+
+    renderer.domElement.addEventListener("pointermove", onPointerMove, { passive: true });
+    renderer.domElement.addEventListener("pointerleave", onPointerLeave, { passive: true });
+    renderer.domElement.addEventListener("pointerdown", pauseAfterInteraction, { passive: true });
+    renderer.domElement.addEventListener("wheel", pauseAfterInteraction, { passive: true });
+    window.addEventListener("resize", resize, { passive: true });
+    resize();
+
+    window.__voxelTreeMorph = {
+      source: "inspired by the cool Hugging Face bonsai-image-webgpu voxel mechanics",
+      voxels: voxels.length,
+      variations: variations.length,
+      cycleMs: 5000,
+      morphSeconds: 1.9,
+      hoverRadius: 7.2,
+      hoverForce: 8.6,
+      go: (index) => startMorph((index + variations.length) % variations.length),
+      next: () => {
+        const order = [3, 0, 1, 2, 4, 5, 6, 7];
+        const next = order[(order.indexOf(activeVariation) + 1) % order.length];
+        startMorph(next);
+      },
+      state: () => ({ activeVariation, targetVariation, morphing, hoverActive }),
+      colorStats: () => {
+        const sum = new THREE.Color(0, 0, 0);
+        let brightest = 0;
+        for (const voxel of voxels) {
+          const color = voxel.currentColor || voxel.color;
+          sum.r += color.r;
+          sum.g += color.g;
+          sum.b += color.b;
+          brightest = Math.max(brightest, color.r, color.g, color.b);
+        }
+        return {
+          average: [sum.r / voxels.length, sum.g / voxels.length, sum.b / voxels.length],
+          brightest,
+          first: voxels[0].currentColor?.toArray()
+        };
+      }
+    };
+
+    let last = performance.now();
+    renderer.setAnimationLoop((now) => {
+      const dt = Math.min((now - last) / 1000, 0.05);
+      last = now;
+
+      controls.update();
+      updateAutoCycle(now);
+      updateMorph(now);
+      updateHover(dt, now);
+      updateParticles(dt, now);
+      updateLights(now);
+
+      renderer.render(scene, camera);
+    });
+
+    function buildBaseVoxels() {
+      const occupied = new Set();
+      const add = (role, x, y, z, color, scale = 1) => {
+        const key = `${x.toFixed(3)},${y.toFixed(3)},${z.toFixed(3)}`;
+        if (occupied.has(key)) return;
+        occupied.add(key);
+        const seed = rng();
+        const voxel = {
+          role,
+          base: new THREE.Vector3(x, y, z),
+          color: new THREE.Color(color),
+          scale,
+          seed,
+          jitter: new THREE.Vector3(
+            (rng() - 0.5) * 0.04,
+            (rng() - 0.5) * 0.04,
+            (rng() - 0.5) * 0.04
+          )
+        };
+        roles[role].push(voxel);
+        voxels.push(voxel);
+      };
+
+      const grassColors = ["#4a8c3f", "#3d7a34", "#5a9e4a", "#2d6b24", "#68ad58", "#3f8535", "#55a048"];
+      const rockColors = ["#a0978a", "#8c8478", "#b5ad9e", "#9a9184", "#7d756a", "#938b7f"];
+      const undersideColors = ["#8b6914", "#7a5c12", "#6b4e10", "#9c7a1e", "#5c4010", "#706860"];
+      const trunkColors = ["#4a3728", "#3d2e20", "#5c4535", "#2e2218", "#6b5444"];
+      const leafColors = ["#e63c2e", "#d4452f", "#f05a3a", "#c93525", "#ff6b45", "#e8502a", "#ff7f50"];
+      const flowerColors = ["#e63c2e", "#f05a3a", "#ff6b45", "#f5a623", "#ff8c42"];
+
+      for (let x = -8; x <= 8; x++) {
+        for (let z = -6; z <= 6; z++) {
+          const d = Math.sqrt(x * x * 0.48 + z * z * 0.58);
+          const noise = terrainNoise(x, z);
+          if (d < 7.6 + noise * 1.45) add("grass", x, 0, z, pick(grassColors));
+          if (d < 8.7 + noise * 1.1 && rng() > 0.18) add("underside", x, -1, z, pick(undersideColors));
+          if (d < 6.2 + noise * 1.0 && rng() > 0.24) add("grass", x, 1, z, pick(grassColors));
+          if (d < 4.9 + noise * 0.85 && rng() > 0.2) add("grass", x, 2, z, pick(grassColors));
+          if (d < 3.7 + noise * 0.65 && rng() > 0.24) add("grass", x, 3, z, pick(grassColors));
+        }
+      }
+
+      for (let y = -2; y >= -11; y--) {
+        const depth = Math.abs(y + 1);
+        const radius = Math.max(0.8, 8.0 - depth * 0.58 + Math.sin(depth * 0.8) * 0.7);
+        for (let x = -10; x <= 10; x++) {
+          for (let z = -8; z <= 8; z++) {
+            const nx = x - Math.sin(depth * 0.7) * 0.35;
+            const nz = z - Math.cos(depth * 0.9) * 0.25;
+            const d = Math.sqrt(nx * nx * 0.45 + nz * nz * 0.55);
+            if (d < radius + terrainNoise(x + depth * 0.3, z - depth * 0.2) * (1 + depth * 0.08) && rng() > 0.1) {
+              add("underside", x, y, z, depth < 4 ? pick(undersideColors) : pick(rockColors));
+            }
+          }
+        }
+      }
+
+      const rootStones = [
+        [0, -12, 0, 1.1], [-3, -12, -1, 0.85], [2, -12, 2, 0.8], [-1, -12, -3, 0.7],
+        [3, -12, -2, 0.62], [-4, -11, 1, 0.7], [1, -13, -4, 0.52], [-2, -13, 3, 0.75]
+      ];
+      for (const [cx, cy, cz, r] of rootStones) {
+        for (let y = cy; y >= cy - 2; y--) {
+          const layer = Math.abs(y - cy);
+          const rr = Math.max(0.35, r - layer * 0.28);
+          for (let x = Math.floor(cx - rr - 1); x <= Math.ceil(cx + rr + 1); x++) {
+            for (let z = Math.floor(cz - rr - 1); z <= Math.ceil(cz + rr + 1); z++) {
+              if (Math.sqrt((x - cx) ** 2 + (z - cz) ** 2) < rr + terrainNoise(x + layer, z - layer) * 0.28) {
+                add("underside", x, y, z, pick(rockColors));
+              }
+            }
+          }
+        }
+      }
+
+      const trunk = [
+        [0, 5, 0], [-1, 5, 0], [0, 5, -1], [-1, 5, -1],
+        [0, 6, 0], [-1, 6, 0], [0, 6, -1], [-1, 6, -1],
+        [0, 7, 0], [-1, 7, 0], [0, 7, -1],
+        [0, 8, 0], [-1, 8, 0], [0, 8, -1],
+        [0, 9, 0], [-1, 9, 0], [0, 10, 0], [-1, 10, 0],
+        [0, 11, 0], [-1, 11, 0], [0, 12, 0], [0, 13, 0],
+        [-2, 11, 0], [-3, 11, 0], [-3, 12, 0], [-4, 12, 0], [-5, 13, 0],
+        [1, 10, 0], [2, 10, 0], [2, 11, 0], [3, 11, 0], [4, 12, 0], [5, 13, -1],
+        [0, 11, 1], [0, 12, 2], [1, 12, 2], [1, 13, 3],
+        [0, 10, -1], [0, 11, -2], [-1, 12, -2], [-1, 13, -3],
+        [1, 8, 0], [-2, 8, 0], [0, 8, 1], [-1, 8, -1]
+      ];
+      for (const p of trunk) add("trunk", p[0], p[1], p[2], pick(trunkColors));
+
+      const canopy = [];
+      const addLeaf = (x, y, z) => {
+        const key = `${x},${y},${z}`;
+        if (!canopy.includes(key)) canopy.push(key);
+      };
+      const mainRadius = 6.3;
+      const yScale = mainRadius / 4.5;
+      for (let x = -8; x <= 8; x++) {
+        for (let y = 12; y <= 23; y++) {
+          for (let z = -7; z <= 7; z++) {
+            const yy = (y - 17) * yScale;
+            const rough = Math.sin(x * 1.8 + z * 1.4) * 0.7 + Math.cos(y * 1.1 + x * 0.7) * 0.6 + Math.sin(z * 2.3 - y * 0.5) * 0.4;
+            if (Math.sqrt(x * x + yy * yy + z * z) < mainRadius + rough && rng() > 0.18) addLeaf(x, y, z);
+          }
+        }
+      }
+
+      const lobes = [
+        [-5, 14, 0, 3.5], [-5, 14, 1, 2.8], [5, 14, -1, 3.5], [4, 15, 0, 3],
+        [1, 14, 3, 3.2], [1, 14, -3, 3], [-1, 14, -3, 2.8], [0, 21, 0, 3],
+        [-2, 20, 1, 2.5], [2, 20, -1, 2.5], [1, 21, 1, 2], [-1, 21, -1, 2],
+        [-7, 15, 0, 2], [6, 15, 0, 2], [0, 15, 5, 2.2], [0, 15, -5, 2.2],
+        [-3, 12, 2, 2.5], [3, 12, -2, 2.5], [-2, 12, -3, 2], [2, 12, 3, 2]
+      ];
+      for (const [cx, cy, cz, r] of lobes) {
+        for (let x = Math.floor(cx - r - 1); x <= Math.ceil(cx + r + 1); x++) {
+          for (let y = Math.floor(cy - r); y <= Math.ceil(cy + r + 1); y++) {
+            for (let z = Math.floor(cz - r - 1); z <= Math.ceil(cz + r + 1); z++) {
+              const dx = x - cx;
+              const dy = (y - cy) * 1.15;
+              const dz = z - cz;
+              if (Math.sqrt(dx * dx + dy * dy + dz * dz) < r && rng() > 0.2) addLeaf(x, y, z);
+            }
+          }
+        }
+      }
+
+      for (const key of canopy) {
+        const [x, y, z] = key.split(",").map(Number);
+        add("leaf", x, y, z, pick(leafColors));
+      }
+
+      const stones = [
+        [-2, 5, -1], [-1, 5, -1], [0, 5, -1], [1, 5, -1], [-2, 5, 0], [-1, 5, 0], [0, 5, 0], [1, 5, 0],
+        [-1, 5, 1], [0, 5, 1], [1, 5, 1], [-2, 5, 1], [3, 2, 2], [3, 3, 2], [4, 1, -1], [4, 2, -1],
+        [-4, 1, -2], [-4, 2, -2], [-3, 2, 2], [-3, 3, 2], [5, 1, 1], [5, 1, 0], [-5, 1, 0], [2, 3, -2],
+        [-3, 3, -1], [6, 1, -2], [-6, 0, 2], [1, 4, 2], [-2, 4, -2], [3, 1, -3], [-2, 1, 3]
+      ];
+      for (const p of stones) add("rock", p[0], p[1], p[2], pick(rockColors));
+
+      const topByXZ = new Map();
+      for (const voxel of roles.grass) {
+        const key = `${Math.round(voxel.base.x)},${Math.round(voxel.base.z)}`;
+        if (!topByXZ.has(key) || voxel.base.y > topByXZ.get(key).y) topByXZ.set(key, voxel.base);
+      }
+
+      for (const pos of topByXZ.values()) {
+        const underTree = Math.abs(pos.x) < 2 && Math.abs(pos.z) < 2;
+        if (!underTree && rng() < 0.34) {
+          add("grassTuft", pos.x + (rng() - 0.5) * 0.5, pos.y + 0.72, pos.z + (rng() - 0.5) * 0.5, pick(grassColors), 0.48);
+        }
+        if (!underTree && rng() < 0.15 && pos.x < -2) {
+          add("mushroom", pos.x + (rng() - 0.5) * 0.35, pos.y + 0.55, pos.z + (rng() - 0.5) * 0.35, "#e8d5b0", 0.45);
+        }
+        if (!underTree && rng() < 0.32) {
+          add("flower", pos.x + (rng() - 0.5) * 0.45, pos.y + 0.45, pos.z + (rng() - 0.5) * 0.45, pick(flowerColors), 0.36);
+        }
+      }
+    }
+
+    function makeWinterMap() {
+      const white = ["#e8f0e8", "#d0e0d0", "#c8dcc8", "#f0f5f0", "#dceadc"];
+      const pine = ["#1a4a2a", "#224e30", "#183e24", "#2a5a38", "#1e4828", "#164020"];
+      const bark = ["#3a2818", "#2e2010", "#4a3420", "#342818"];
+      const rock = ["#d0d0d0", "#c0c0c0", "#e0e0e0", "#b8b8b8", "#cccccc"];
+      return makeMap((voxel) => {
+        const p = voxel.base.clone();
+        let color = voxel.color.clone();
+        if (voxel.role === "leaf") {
+          const h = (p.y - 12) / 11;
+          const angle = Math.atan2(p.z, p.x);
+          const radius = Math.sqrt(p.x * p.x + p.z * p.z);
+          const tier = Math.floor(h * 5);
+          const cap = Math.max(2.6, (5.5 - tier) * (1 - (h * 5 - tier) * 0.3));
+          const squeezed = Math.min(radius, cap) * (cap / Math.max(3, radius + 1));
+          p.x = Math.cos(angle) * squeezed * 1.1 + (rng() - 0.5) * 0.28;
+          p.z = Math.sin(angle) * squeezed * 1.1 + (rng() - 0.5) * 0.28;
+          p.y += h * 2 + (rng() - 0.5) * 0.25;
+          color = new THREE.Color(pick((h * 5 - tier) > 0.6 || h > 0.8 ? white : pine));
+          if ((h * 5 - tier) > 0.6 || h > 0.8) color.multiplyScalar(0.74);
+        } else if (voxel.role === "trunk") {
+          p.x = p.x * 0.7 + (rng() - 0.5) * 0.15;
+          p.z = p.z * 0.7 + (rng() - 0.5) * 0.15;
+          color = new THREE.Color(pick(bark));
+        } else if (voxel.role === "grass" || voxel.role === "grassTuft") {
+          p.x *= 0.72;
+          p.z *= 0.72;
+          p.y += Math.max(0, 4 - Math.abs(p.x) - Math.abs(p.z) * 0.5) * 0.18;
+          color = new THREE.Color(pick(white)).multiplyScalar(0.82);
+        } else if (voxel.role === "rock" || voxel.role === "underside") {
+          p.x *= 0.94;
+          p.z *= 0.94;
+          color = new THREE.Color(pick(rock)).multiplyScalar(voxel.role === "rock" ? 0.9 : 0.72);
+        }
+        return [p, color];
+      });
+    }
+
+    function makeBlossomMap() {
+      const blossom = ["#ffb7c5", "#ff97b0", "#ffc8d6", "#ff85a0", "#ffd0db", "#ffa0b8", "#ff90a8"];
+      const pale = ["#fff0f5", "#ffe8ef", "#fff5f8", "#ffeef3"];
+      const bark = ["#5c3a28", "#4a2e1e", "#6b4835", "#3d2418", "#7a5840"];
+      const grass = ["#5a9e4a", "#4a8c3f", "#68ad58", "#3d7a34", "#55a048"];
+      const stone = ["#a09888", "#8c847a", "#b5ada0", "#9a9284", "#706860"];
+      return makeMap((voxel) => {
+        const p = voxel.base.clone();
+        let color = voxel.color.clone();
+        if (voxel.role === "leaf") {
+          const h = (p.y - 12) / 11;
+          const radius = Math.sqrt(p.x * p.x + p.z * p.z);
+          const spread = 1.28;
+          p.x = p.x * spread + (rng() - 0.5) * 0.28;
+          p.z = p.z * spread + (rng() - 0.5) * 0.28;
+          p.y = p.y - radius * 0.06 - h * 1.5 + (rng() - 0.5) * 0.25;
+          color = new THREE.Color(pick(rng() < 0.15 ? pale : blossom));
+        } else if (voxel.role === "trunk") {
+          p.x = p.x * 0.86 + Math.sin(p.y * 0.15) * 0.8 + (rng() - 0.5) * 0.12;
+          p.z = p.z * 0.85 + (rng() - 0.5) * 0.12;
+          color = new THREE.Color(pick(bark));
+        } else if (voxel.role === "grass" || voxel.role === "grassTuft") {
+          p.x *= 1.15;
+          p.z *= 1.1;
+          p.y *= 0.65;
+          color = new THREE.Color(pick(grass));
+        } else if (voxel.role === "rock" || voxel.role === "underside") {
+          p.x *= 1.16;
+          p.z *= 1.16;
+          p.y *= 0.72;
+          color = new THREE.Color(pick(stone));
+        } else if (voxel.role === "flower" || voxel.role === "mushroom") {
+          color = new THREE.Color(pick(blossom));
+        }
+        return [p, color];
+      });
+    }
+
+    function makeAutumnMap() {
+      const red = ["#b81918", "#cf2620", "#e43a24", "#f05b31", "#8d1414", "#f07037", "#f5a623"];
+      const grass = ["#1f6f22", "#2f8e2d", "#3ca23a", "#165719", "#54a247"];
+      const bark = ["#221008", "#2b170c", "#3a2112", "#4a2814"];
+      const dirt = ["#5a3518", "#6d421d", "#7b4e22", "#8d5a28", "#3c2514"];
+      const stone = ["#0c0b0a", "#151412", "#25211d", "#514838"];
+      return makeMap((voxel) => {
+        const p = voxel.base.clone();
+        let color = voxel.color.clone();
+        if (voxel.role === "leaf") {
+          const h = (p.y - 12) / 11;
+          const angle = Math.atan2(p.z, p.x);
+          const radius = Math.sqrt(p.x * p.x + p.z * p.z);
+          const tier = h < 0.35 ? 0 : h < 0.72 ? 1 : 2;
+          const maxR = [5.0, 6.0, 3.4][tier];
+          p.x = Math.cos(angle) * Math.min(radius * 0.92, maxR) + (rng() - 0.5) * 0.32;
+          p.z = Math.sin(angle) * Math.min(radius * 0.76, maxR * 0.64) + (rng() - 0.5) * 0.28;
+          p.y = 12.2 + h * 8.2 + (tier === 1 ? 0.8 : 0) + (rng() - 0.5) * 0.28;
+          color = new THREE.Color(pick(red));
+        } else if (voxel.role === "trunk") {
+          p.x = p.x * 0.52 + Math.sin(p.y * 0.33) * 0.3;
+          p.z *= 0.55;
+          color = new THREE.Color(pick(bark));
+        } else if (voxel.role === "grass" || voxel.role === "grassTuft") {
+          p.x *= 1.02;
+          p.z *= 1.02;
+          p.y *= 0.72;
+          color = new THREE.Color(pick(grass));
+        } else if (voxel.role === "underside") {
+          p.y *= 0.58;
+          p.x *= 0.98;
+          p.z *= 0.98;
+          color = new THREE.Color(pick(dirt));
+        } else if (voxel.role === "rock") {
+          color = new THREE.Color(pick(stone));
+        } else if (voxel.role === "flower" || voxel.role === "mushroom") {
+          color = new THREE.Color(pick(red));
+        }
+        return [p, color];
+      });
+    }
+
+    function makeAncientMap() {
+      const soil = ["#3a322c", "#4a4038", "#52473e", "#2e2620", "#403631"];
+      const underside = ["#1c1410", "#241a12", "#2a1f17", "#1a120e"];
+      const bark = ["#3a2a1c", "#4a3828", "#2e2218", "#5c4530", "#3e2c1e", "#4f3a28"];
+      const woodLight = ["#6a4f35", "#75583c", "#5e4530"];
+      const greens = ["#2d4a28", "#1f3a1c", "#244222", "#2a4625", "#456f3a", "#5a8845"];
+      const yellow = ["#8fb058", "#a3c267", "#7ea84a", "#9bc05e"];
+      const red = ["#9a5226", "#8a4520", "#b04030", "#933420"];
+
+      const trunkPath = [
+        [1, -0.6, 0], [1, 3, 0], [1.4, 4.5, 0.1], [3.6, 5.4, 0.2],
+        [3.8, 7, 0.1], [3.2, 9.5, 0], [2, 11.5, 0.1], [1.4, 13, 0.3]
+      ].map(([x, y, z]) => [x * 1.8, y * 1.8, z * 1.8]);
+
+      const canopy = [
+        { cx: -9.9, cy: 10.8, cz: 0.36, rx: 7.2, ry: 1.35, rz: 4.68 },
+        { cx: 8.1, cy: 15.84, cz: -1.08, rx: 5.4, ry: 1.26, rz: 3.96 },
+        { cx: 0.54, cy: 22.5, cz: 0.54, rx: 8.28, ry: 1.71, rz: 5.4 }
+      ];
+
+      return makeMap((voxel) => {
+        const p = voxel.base.clone();
+        let color = voxel.color.clone();
+        if (voxel.role === "trunk") {
+          const t = clamp((p.y - 5) / 13);
+          const curve = samplePath(trunkPath, t);
+          const ring = Math.atan2(p.z, Math.abs(p.x) > 0.01 ? p.x : 0.01);
+          const thick = 1.55 * Math.exp(-2 * t) + 0.85;
+          p.x = curve.x + Math.cos(ring) * thick + (rng() - 0.5) * 0.18;
+          p.y = curve.y + (rng() - 0.5) * 0.22;
+          p.z = curve.z + Math.sin(ring) * thick + (rng() - 0.5) * 0.18;
+          color = new THREE.Color(pick(Math.cos(ring) + Math.sin(ring) > 0.3 ? woodLight : bark));
+        } else if (voxel.role === "leaf") {
+          const i = p.y >= 20 ? 2 : p.y < 15 ? 0 : 1;
+          const target = canopy[i];
+          const polar = Math.atan2(p.z, p.x);
+          const rad = Math.min(1, Math.sqrt(p.x * p.x + p.z * p.z) / 7);
+          p.x = target.cx + Math.cos(polar) * rad * target.rx + (rng() - 0.5) * 0.55;
+          p.z = target.cz + Math.sin(polar) * rad * target.rz + (rng() - 0.5) * 0.55;
+          p.y = target.cy + (rng() - 0.5) * 2 * target.ry;
+          const r = rng();
+          color = new THREE.Color(pick(r < 0.08 ? red : r < 0.2 ? yellow : greens));
+        } else if (voxel.role === "grass" || voxel.role === "grassTuft") {
+          p.x *= 1.08;
+          p.z *= 0.92;
+          p.y = -0.2 + Math.max(0, p.y) * 0.25;
+          color = new THREE.Color(pick(greens));
+        } else if (voxel.role === "underside") {
+          p.x *= 0.92;
+          p.z *= 0.9;
+          p.y = -0.5 + p.y * 0.42;
+          color = new THREE.Color(pick(underside));
+        } else if (voxel.role === "rock") {
+          p.x *= 0.9;
+          p.z *= 0.9;
+          p.y = Math.min(p.y, 0.4);
+          color = new THREE.Color(pick(soil));
+        } else if (voxel.role === "flower" || voxel.role === "mushroom") {
+          const i = Math.floor(rng() * canopy.length);
+          const target = canopy[i];
+          const a = rng() * Math.PI * 2;
+          const r = Math.sqrt(rng());
+          p.x = target.cx + Math.cos(a) * r * target.rx;
+          p.z = target.cz + Math.sin(a) * r * target.rz;
+          p.y = target.cy + (rng() - 0.5) * 2 * target.ry;
+          color = new THREE.Color(pick(greens));
+        }
+        return [p, color];
+      });
+    }
+
+    function makeOakMap() {
+      const leafDeep = ["#1e5224", "#245a2a", "#1a4820", "#2a6230", "#1f5025"];
+      const leafMid = ["#2f7a36", "#388540", "#3a8242", "#2c7032", "#327838"];
+      const leafLight = ["#54a04a", "#62b058", "#7ec06a", "#4a9842", "#6cb55e"];
+      const leafSun = ["#a8d068", "#b8d870", "#98c860", "#90c258"];
+      const bark = ["#5a463a", "#6b5544", "#4a3a30", "#7a6354", "#3e3128", "#8a7060"];
+      const barkLight = ["#9a8068", "#a89078", "#b09a82"];
+      const grass = ["#3d8a35", "#4a9c3f", "#5aae4a", "#358032", "#68b858", "#42953a"];
+      const soil = ["#5c4028", "#6e4f32", "#4a341e", "#7a5a3c"];
+
+      const canopyCenter = { x: 0, y: 17, z: 0 };
+      const canopyRx = 8.4;
+      const canopyRy = 6.2;
+      const canopyRz = 8.4;
+
+      return makeMap((voxel) => {
+        const p = voxel.base.clone();
+        let color = voxel.color.clone();
+        if (voxel.role === "leaf") {
+          const dx = p.x;
+          const dy = p.y - 14;
+          const dz = p.z;
+          const radius = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1;
+          const inv = 1 / radius;
+          const targetR = 6.8 + (rng() - 0.5) * 1.4;
+          const nx = dx * inv;
+          const ny = dy * inv;
+          const nz = dz * inv;
+          p.x = canopyCenter.x + nx * targetR * (canopyRx / 7) + (rng() - 0.5) * 0.6;
+          p.y = canopyCenter.y + ny * targetR * (canopyRy / 7) + (rng() - 0.5) * 0.6;
+          p.z = canopyCenter.z + nz * targetR * (canopyRz / 7) + (rng() - 0.5) * 0.6;
+          const heightRatio = (p.y - (canopyCenter.y - canopyRy)) / (canopyRy * 2);
+          const topLit = ny > 0.35;
+          const r = rng();
+          let palette;
+          if (topLit && r < 0.55) palette = leafSun;
+          else if (heightRatio > 0.6) palette = leafLight;
+          else if (heightRatio > 0.3) palette = leafMid;
+          else palette = r < 0.4 ? leafMid : leafDeep;
+          color = new THREE.Color(pick(palette));
+        } else if (voxel.role === "trunk") {
+          const t = clamp((p.y - 5) / 9);
+          const thick = 1.7 - t * 0.6;
+          const ring = Math.atan2(p.z, Math.abs(p.x) > 0.01 ? p.x : 0.01);
+          p.x = Math.cos(ring) * thick + (rng() - 0.5) * 0.2;
+          p.z = Math.sin(ring) * thick + (rng() - 0.5) * 0.2;
+          p.y = 4 + t * 10 + (rng() - 0.5) * 0.25;
+          const lit = Math.cos(ring) > 0.25;
+          color = new THREE.Color(pick(lit && rng() < 0.35 ? barkLight : bark));
+        } else if (voxel.role === "grass" || voxel.role === "grassTuft") {
+          p.x *= 1.18;
+          p.z *= 1.18;
+          p.y = Math.max(0, p.y) * 0.55;
+          color = new THREE.Color(pick(grass));
+        } else if (voxel.role === "underside") {
+          p.x *= 1.05;
+          p.z *= 1.05;
+          p.y *= 0.7;
+          color = new THREE.Color(pick(soil));
+        } else if (voxel.role === "rock") {
+          color = new THREE.Color(pick(soil)).multiplyScalar(0.85);
+        } else if (voxel.role === "flower" || voxel.role === "mushroom") {
+          color = new THREE.Color(pick(leafLight));
+        }
+        return [p, color];
+      });
+    }
+
+    function makeFruitMap() {
+      const leafDeep = ["#0e3a18", "#103e1c", "#0a3215", "#143f20", "#0c3a1a", "#164422"];
+      const leafMid = ["#1b5028", "#1f5a2e", "#235e30", "#1d5429", "#205830"];
+      const leafShade = ["#072412", "#0a2e16", "#051f10"];
+      const fruitRed = ["#d92d1a", "#c61f10", "#e63924", "#b81810", "#f04030"];
+      const fruitOrange = ["#ff8418", "#f57210", "#ff9530", "#e86508", "#ffa040"];
+      const fruitYellow = ["#f5c518", "#ffd028", "#e8b410", "#ffdc40", "#f0c020"];
+      const bark = ["#3a2818", "#4a3422", "#2c1e12", "#5a4030", "#3e2a1a"];
+      const grass = ["#1f5a28", "#286a30", "#194a22", "#306e36", "#235e2c"];
+      const soil = ["#2a1e14", "#382818", "#1e160e", "#3e2c1c"];
+
+      const canopyCenter = { x: 0, y: 17, z: 0 };
+      const canopyRx = 7.6;
+      const canopyRy = 6.8;
+      const canopyRz = 7.6;
+
+      return makeMap((voxel) => {
+        const p = voxel.base.clone();
+        let color = voxel.color.clone();
+        if (voxel.role === "leaf") {
+          const dx = p.x;
+          const dy = p.y - 14;
+          const dz = p.z;
+          const radius = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1;
+          const inv = 1 / radius;
+          const targetR = 6.6 + (rng() - 0.5) * 1.3;
+          const nx = dx * inv;
+          const ny = dy * inv;
+          const nz = dz * inv;
+          p.x = canopyCenter.x + nx * targetR * (canopyRx / 7) + (rng() - 0.5) * 0.55;
+          p.y = canopyCenter.y + ny * targetR * (canopyRy / 7) + (rng() - 0.5) * 0.55;
+          p.z = canopyCenter.z + nz * targetR * (canopyRz / 7) + (rng() - 0.5) * 0.55;
+          const outward = ny < -0.1 ? 0 : Math.max(0, (nx * nx + nz * nz) - 0.3);
+          const fruitChance = 0.11 + outward * 0.18;
+          const r = rng();
+          if (r < fruitChance) {
+            const f = rng();
+            const palette = f < 0.45 ? fruitRed : f < 0.78 ? fruitOrange : fruitYellow;
+            color = new THREE.Color(pick(palette));
+          } else if (ny < -0.15 && r < 0.55) {
+            color = new THREE.Color(pick(leafShade));
+          } else if (r < 0.4) {
+            color = new THREE.Color(pick(leafMid));
+          } else {
+            color = new THREE.Color(pick(leafDeep));
+          }
+        } else if (voxel.role === "trunk") {
+          const t = clamp((p.y - 5) / 9);
+          const thick = 1.5 - t * 0.55;
+          const ring = Math.atan2(p.z, Math.abs(p.x) > 0.01 ? p.x : 0.01);
+          p.x = Math.cos(ring) * thick + (rng() - 0.5) * 0.2;
+          p.z = Math.sin(ring) * thick + (rng() - 0.5) * 0.2;
+          p.y = 4 + t * 10 + (rng() - 0.5) * 0.22;
+          color = new THREE.Color(pick(bark));
+        } else if (voxel.role === "grass" || voxel.role === "grassTuft") {
+          p.x *= 1.12;
+          p.z *= 1.12;
+          p.y = Math.max(0, p.y) * 0.5;
+          color = new THREE.Color(pick(grass));
+        } else if (voxel.role === "underside") {
+          p.x *= 1.02;
+          p.z *= 1.02;
+          p.y *= 0.7;
+          color = new THREE.Color(pick(soil));
+        } else if (voxel.role === "rock") {
+          color = new THREE.Color(pick(soil)).multiplyScalar(0.85);
+        } else if (voxel.role === "flower" || voxel.role === "mushroom") {
+          const f = rng();
+          const palette = f < 0.45 ? fruitRed : f < 0.78 ? fruitOrange : fruitYellow;
+          color = new THREE.Color(pick(palette));
+        }
+        return [p, color];
+      });
+    }
+
+    function makeBaobabMap() {
+      const bark = ["#a87858", "#9a6a48", "#b88868", "#8a5a3a", "#a06848", "#b07050", "#967050"];
+      const barkShade = ["#5a3a25", "#6a4530", "#724935", "#7a503c", "#5a3528"];
+      const barkLight = ["#c89878", "#d4a888", "#b88a68", "#c08868"];
+      const leaves = ["#6a8a55", "#7a9a65", "#5a7848", "#88a572", "#6e9460", "#4f6e3e"];
+      const savanna = ["#c8a050", "#b89048", "#a8853c", "#d0a858", "#a88040", "#b88c40", "#9c7836"];
+      const soil = ["#6a3a1a", "#5a2e15", "#7a4520", "#4a2812", "#6c3a1c", "#854c22"];
+      const sun = ["#ff9050", "#e87830", "#ff7530", "#f08a40"];
+
+      const trunkBaseY = -1;
+      const trunkTopY = 15.5;
+      const trunkH = trunkTopY - trunkBaseY;
+
+      const trunkRadius = (yt) => {
+        const t = clamp((yt - trunkBaseY) / trunkH);
+        return 4.6 - 1.05 * t + Math.sin(t * Math.PI) * 0.45;
+      };
+
+      const branchCount = 11;
+      const branches = [];
+      for (let i = 0; i < branchCount; i++) {
+        const a = (i / branchCount) * Math.PI * 2 + 0.27;
+        branches.push({
+          cosA: Math.cos(a),
+          sinA: Math.sin(a),
+          length: 5.4 + (i % 4) * 0.8,
+          lift: 1.6 + ((i * 37) % 5) * 0.35
+        });
+      }
+      const branchStartR = trunkRadius(trunkTopY) - 0.5;
+      const clumpCount = 14;
+      const clumps = [];
+      for (let i = 0; i < clumpCount; i++) {
+        const b = branches[i % branchCount];
+        const radial = branchStartR + b.length + ((i * 0.37) % 1) * 0.9;
+        const off = ((i * 17) % branchCount) / branchCount * 0.35;
+        const ca = b.cosA + (((i * 13) % 7) - 3) * 0.04;
+        const sa = b.sinA + (((i * 19) % 7) - 3) * 0.04;
+        clumps.push({
+          x: ca * radial + off,
+          y: trunkTopY + b.lift + 0.5 + ((i * 0.29) % 1) * 1.1,
+          z: sa * radial - off
+        });
+      }
+
+      return makeMap((voxel) => {
+        const p = voxel.base.clone();
+        let color = voxel.color.clone();
+        if (voxel.role === "leaf") {
+          const s = voxel.seed;
+          if (s < 0.62) {
+            const ringT = s / 0.62;
+            const yt = trunkBaseY + ringT * trunkH;
+            const angle = Math.atan2(voxel.base.z, voxel.base.x || 0.001) + s * Math.PI * 5.5;
+            const radius = trunkRadius(yt) + (rng() - 0.5) * 0.5;
+            p.x = Math.cos(angle) * radius + (rng() - 0.5) * 0.28;
+            p.z = Math.sin(angle) * radius + (rng() - 0.5) * 0.28;
+            p.y = yt + (rng() - 0.5) * 0.55;
+            const lit = Math.cos(angle) > 0.1;
+            color = new THREE.Color(pick(lit ? (rng() < 0.45 ? barkLight : bark) : (rng() < 0.55 ? barkShade : bark)));
+          } else if (s < 0.93) {
+            const bi = Math.floor(((s - 0.62) / 0.31) * branchCount) % branchCount;
+            const b = branches[bi];
+            const along = ((s * 173.3 + voxel.base.y * 0.11) % 1);
+            const r0 = branchStartR + along * b.length;
+            const taper = 0.55 * (1 - along) + 0.18;
+            p.x = b.cosA * r0 + (rng() - 0.5) * taper * 1.6;
+            p.z = b.sinA * r0 + (rng() - 0.5) * taper * 1.6;
+            p.y = trunkTopY + along * b.lift + Math.sin(along * Math.PI) * 0.7 + (rng() - 0.5) * taper;
+            color = new THREE.Color(pick(rng() < 0.4 ? barkShade : bark));
+          } else {
+            const ci = Math.floor(rng() * clumpCount);
+            const c = clumps[ci];
+            p.x = c.x + (rng() - 0.5) * 1.7;
+            p.z = c.z + (rng() - 0.5) * 1.7;
+            p.y = c.y + (rng() - 0.5) * 1.2;
+            color = new THREE.Color(pick(leaves));
+          }
+        } else if (voxel.role === "trunk") {
+          const t = clamp((p.y - 5) / 13);
+          const yt = trunkBaseY + t * trunkH;
+          const ring = Math.atan2(p.z, Math.abs(p.x) > 0.01 ? p.x : 0.01);
+          const radius = trunkRadius(yt);
+          p.x = Math.cos(ring) * radius + (rng() - 0.5) * 0.25;
+          p.z = Math.sin(ring) * radius + (rng() - 0.5) * 0.25;
+          p.y = yt + (rng() - 0.5) * 0.3;
+          const lit = Math.cos(ring) > 0.1;
+          color = new THREE.Color(pick(lit ? barkLight : bark));
+        } else if (voxel.role === "grass" || voxel.role === "grassTuft") {
+          p.x *= 1.35;
+          p.z *= 1.35;
+          p.y = Math.max(0, p.y) * 0.4;
+          color = new THREE.Color(pick(savanna));
+        } else if (voxel.role === "underside") {
+          p.x *= 1.06;
+          p.z *= 1.06;
+          p.y *= 0.78;
+          color = new THREE.Color(pick(soil));
+        } else if (voxel.role === "rock") {
+          color = new THREE.Color(pick(soil)).multiplyScalar(0.88);
+        } else if (voxel.role === "flower" || voxel.role === "mushroom") {
+          color = new THREE.Color(pick(rng() < 0.5 ? savanna : sun));
+        }
+        return [p, color];
+      });
+    }
+
+    function makeMangroveMap() {
+      const leafDeep = ["#1a3e22", "#1f4a26", "#163a1e", "#225228", "#1d4622", "#194020"];
+      const leafMid = ["#2e6e34", "#358040", "#3a7a3c", "#447e40", "#3e7438", "#326e36"];
+      const leafLight = ["#5a9a52", "#6cae62", "#7ac070", "#65a45a", "#82be6e"];
+      const bark = ["#3a2a1c", "#4a3828", "#2e2018", "#5a4232", "#3e2c1e", "#523c2c"];
+      const barkLight = ["#6a543e", "#7a6048", "#5e4838", "#806a52"];
+      const rootBark = ["#3e2c1e", "#4a3624", "#5a4030", "#352618", "#4e3a28", "#634a36"];
+      const waterShallow = ["#3b88a8", "#4a9ec0", "#5db0d0", "#62b8d8", "#4090b8", "#56a8c8"];
+      const waterMid = ["#246a8a", "#1d5e7e", "#2d7898", "#1a5274", "#286c8e"];
+      const waterDeep = ["#0e3650", "#124060", "#0a2c44", "#163e5c", "#082238", "#0c3048"];
+      const mud = ["#2e2418", "#3a2c1e", "#22180e", "#403020", "#2a1e14"];
+      const foam = ["#b8e0ef", "#c8e8f2", "#a0d4e4", "#d4eef5"];
+
+      const waterLevel = -3.2;
+      const archCount = 12;
+      const arches = [];
+      for (let i = 0; i < archCount; i++) {
+        const a = (i / archCount) * Math.PI * 2 + 0.27;
+        arches.push({
+          cosA: Math.cos(a),
+          sinA: Math.sin(a),
+          startY: 4.8 + ((i * 13) % 7) * 0.65,
+          length: 4.8 + ((i * 7) % 5) * 0.55
+        });
+      }
+
+      const rootRoles = new Set(["rock", "flower", "mushroom", "grassTuft"]);
+
+      return makeMap((voxel) => {
+        const p = voxel.base.clone();
+        let color = voxel.color.clone();
+        if (voxel.role === "leaf") {
+          const dx = p.x;
+          const dy = p.y - 17;
+          const dz = p.z;
+          const radius = Math.sqrt(dx * dx + dy * dy * 1.15 + dz * dz) || 1;
+          const inv = 1 / radius;
+          const targetR = 5.7 + (rng() - 0.5) * 1.3;
+          const nx = dx * inv;
+          const ny = dy * inv;
+          const nz = dz * inv;
+          p.x = nx * targetR + (rng() - 0.5) * 0.5;
+          p.y = 17 + ny * targetR * 0.85 + (rng() - 0.5) * 0.5;
+          p.z = nz * targetR + (rng() - 0.5) * 0.5;
+          const topLit = ny > 0.25;
+          const r = rng();
+          let palette;
+          if (topLit && r < 0.5) palette = leafLight;
+          else if (ny < -0.2 && r < 0.55) palette = leafDeep;
+          else palette = r < 0.55 ? leafMid : leafDeep;
+          color = new THREE.Color(pick(palette));
+        } else if (voxel.role === "trunk") {
+          const t = clamp((p.y - 5) / 9);
+          const thick = 1.15 + (1 - t) * 0.5;
+          const ring = Math.atan2(p.z, Math.abs(p.x) > 0.01 ? p.x : 0.01);
+          p.x = Math.cos(ring) * thick + Math.sin(p.y * 0.3) * 0.3 + (rng() - 0.5) * 0.18;
+          p.z = Math.sin(ring) * thick + (rng() - 0.5) * 0.18;
+          p.y = 4.5 + t * 11 + (rng() - 0.5) * 0.25;
+          const lit = Math.cos(ring) > 0.2;
+          color = new THREE.Color(pick(lit && rng() < 0.45 ? barkLight : bark));
+        } else if (rootRoles.has(voxel.role)) {
+          const idx = Math.floor(voxel.seed * archCount * 1.7) % archCount;
+          const arch = arches[idx];
+          const along = (voxel.seed * 31.7 + Math.abs(p.x) * 0.11 + Math.abs(p.z) * 0.09) % 1;
+          const radial = along * arch.length;
+          const archLift = Math.sin(along * Math.PI) * 1.2;
+          const taper = 0.55 * (1 - along) + 0.22;
+          p.x = arch.cosA * radial + (rng() - 0.5) * taper * 1.4;
+          p.z = arch.sinA * radial + (rng() - 0.5) * taper * 1.4;
+          const apex = arch.startY * (1 - along) + archLift;
+          const dip = Math.max(0, along - 0.78) * (arch.startY + 5);
+          p.y = apex - dip + (rng() - 0.5) * 0.22;
+          color = new THREE.Color(pick(rootBark));
+        } else if (voxel.role === "grass") {
+          const radial = Math.sqrt(p.x * p.x + p.z * p.z);
+          p.x *= 1.32;
+          p.z *= 1.32;
+          p.y = waterLevel + (rng() - 0.5) * 0.22;
+          const r = rng();
+          const palette = radial > 4.5 && r < 0.2 ? foam : waterShallow;
+          color = new THREE.Color(pick(palette));
+        } else if (voxel.role === "underside") {
+          const depth = Math.abs(p.y);
+          p.x *= 1.08;
+          p.z *= 1.08;
+          p.y = waterLevel - 0.5 - (depth - 1) * 0.55;
+          let palette;
+          if (depth < 2.5) palette = waterMid;
+          else if (depth < 5) palette = waterDeep;
+          else if (depth < 8) palette = waterDeep;
+          else palette = mud;
+          color = new THREE.Color(pick(palette));
+        }
+        return [p, color];
+      });
+    }
+
+    function makeMap(transform) {
+      const positions = new Array(voxels.length);
+      const colors = new Array(voxels.length);
+      for (let i = 0; i < voxels.length; i++) {
+        const [position, color] = transform(voxels[i], i);
+        positions[i] = position;
+        colors[i] = color;
+      }
+      return { positions, colors };
+    }
+
+    function applyVariation(index, immediate = false) {
+      const variation = variations[index];
+      activeVariation = index;
+      for (let i = 0; i < voxels.length; i++) {
+        voxels[i].current = variation.positions[i].clone();
+        voxels[i].currentColor = variation.colors[i].clone();
+        if (immediate) offsets[i].set(0, 0, 0);
+        setInstance(i);
+      }
+      mesh.instanceMatrix.needsUpdate = true;
+      mesh.instanceColor.needsUpdate = true;
+    }
+
+    function startMorph(index) {
+      if (morphing || index === activeVariation) return;
+      targetVariation = index;
+      morphing = true;
+      morphStarted = performance.now();
+      morphFromPositions = voxels.map((v) => v.current.clone());
+      morphFromColors = voxels.map((v) => v.currentColor.clone());
+      if (typeof syncPicker === "function") syncPicker();
+    }
+
+    function updateMorph(now) {
+      if (!morphing) return;
+      const duration = settings.morphMs;
+      let t = clamp((now - morphStarted) / duration);
+      t = easeInOutCubic(t);
+      const target = variations[targetVariation];
+      const base = variations[0];
+
+      for (let i = 0; i < voxels.length; i++) {
+        const waveDelay = (Math.sin(base.positions[i].x * 0.5 + base.positions[i].z * 0.7) * 0.5 + 0.5) * 0.3;
+        const local = clamp((t - waveDelay) / (1 - waveDelay));
+        const v = voxels[i];
+        v.current.copy(morphFromPositions[i]).lerp(target.positions[i], local);
+        v.currentColor.copy(morphFromColors[i]).lerp(target.colors[i], local);
+        setInstance(i);
+      }
+      mesh.instanceMatrix.needsUpdate = true;
+      mesh.instanceColor.needsUpdate = true;
+
+      if (t >= 1) {
+        morphing = false;
+        activeVariation = targetVariation;
+        lastMorphAt = now;
+        morphFromPositions = null;
+        morphFromColors = null;
+      }
+    }
+
+    function updateAutoCycle(now) {
+      if (now >= suppressAutoUntil && !controls.autoRotate && settings.autoRotate) {
+        controls.autoRotate = true;
+      }
+      if (!settings.autoMorph) {
+        lastMorphAt = now;
+        return;
+      }
+      if (morphing || now < suppressAutoUntil) {
+        if (morphing) lastMorphAt = now;
+        return;
+      }
+      if (now - lastMorphAt >= settings.cycleMs) {
+        const order = [3, 0, 1, 2, 4, 5, 6, 7];
+        const next = order[(order.indexOf(activeVariation) + 1) % order.length];
+        startMorph(next);
+      }
+    }
+
+    function updateHover(dt, now) {
+      raycaster.setFromCamera(pointer, camera);
+      camera.getWorldDirection(cameraDir);
+      root.updateMatrixWorld(true);
+      worldTreeCenter.copy(treeCenter);
+      root.localToWorld(worldTreeCenter);
+      hoverPlane.setFromNormalAndCoplanarPoint(cameraDir.clone().negate(), worldTreeCenter);
+      const hit = raycaster.ray.intersectPlane(hoverPlane, hoverPoint);
+      if (hit) {
+        localHoverPoint.copy(hoverPoint);
+        root.worldToLocal(localHoverPoint);
+      }
+      hoverActive = Boolean(hit && localHoverPoint.distanceTo(treeCenter) < 18 && pointer.lastMove > -Infinity);
+      const blend = 1 - Math.exp(-(hoverActive ? 8 : 2.5) * dt);
+
+      for (let i = 0; i < voxels.length; i++) {
+        const current = voxels[i].current;
+        let tx = 0;
+        let ty = 0;
+        let tz = 0;
+
+        if (hoverActive) {
+          const dx = current.x - localHoverPoint.x;
+          const dy = current.y - localHoverPoint.y;
+          const dz = current.z - localHoverPoint.z;
+          const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+          const radius = settings.hoverRadius;
+          if (distance < radius && distance > 0.01) {
+            const intensity = 1 - distance / radius;
+            const force = intensity * intensity * intensity * settings.hoverForce;
+            const inv = 1 / distance;
+            const rand = randDirs[i];
+            const wave = 1 + (Math.sin(now * 0.003 + current.x * 1.3 + current.y * 0.7 + current.z * 1.1) * 0.15) * intensity;
+            const vx = dx * inv * 0.66 + rand.x * 0.34;
+            const vy = dy * inv * 0.66 + rand.y * 0.34;
+            const vz = dz * inv * 0.66 + rand.z * 0.34;
+            const len = Math.sqrt(vx * vx + vy * vy + vz * vz) || 1;
+            tx = (vx / len) * force * wave;
+            ty = (vy / len) * force * wave;
+            tz = (vz / len) * force * wave;
+          }
+        }
+
+        offsets[i].x += (tx - offsets[i].x) * blend;
+        offsets[i].y += (ty - offsets[i].y) * blend;
+        offsets[i].z += (tz - offsets[i].z) * blend;
+        setInstance(i);
+      }
+
+      mesh.instanceMatrix.needsUpdate = true;
+    }
+
+    function setInstance(i) {
+      const voxel = voxels[i];
+      const position = voxel.current || voxel.base;
+      const offset = offsets[i];
+      const jitter = voxel.jitter;
+      tempObj.position.set(
+        position.x + offset.x + jitter.x,
+        position.y + offset.y + jitter.y,
+        position.z + offset.z + jitter.z
+      );
+      tempObj.rotation.set(0, 0, 0);
+      tempObj.scale.setScalar(voxel.scale);
+      tempObj.updateMatrix();
+      mesh.setMatrixAt(i, tempObj.matrix);
+      mesh.setColorAt(i, tempColor.copy(voxel.currentColor || voxel.color));
+    }
+
+    function buildParticles() {
+      const dustMax = 6000;
+      const dustRangeXZ = 42;
+      const dustRangeY = 50;
+      const dustBaseY = -12;
+      const positions = new Float32Array(dustMax * 3);
+      const velocity = new Float32Array(dustMax * 3);
+      for (let i = 0; i < dustMax; i++) {
+        positions[i * 3] = (rng() - 0.5) * dustRangeXZ;
+        positions[i * 3 + 1] = rng() * dustRangeY + dustBaseY;
+        positions[i * 3 + 2] = (rng() - 0.5) * dustRangeXZ;
+        velocity[i * 3] = (rng() - 0.5) * 0.12;
+        velocity[i * 3 + 1] = (rng() - 0.2) * 0.06;
+        velocity[i * 3 + 2] = (rng() - 0.5) * 0.12;
+      }
+
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+      geo.setDrawRange(0, settings.dustCount);
+      const mat = new THREE.PointsMaterial({
+        color: 0xff9a4a,
+        opacity: 0.82,
+        size: 0.11,
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        sizeAttenuation: true
+      });
+      const dust = new THREE.Points(geo, mat);
+      dust.frustumCulled = false;
+      scene.add(dust);
+
+      const leafMax = 200;
+      const leafGeo = new THREE.PlaneGeometry(0.5, 0.5);
+      const leafMat = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        opacity: 0.78,
+        transparent: true,
+        depthWrite: false,
+        side: THREE.DoubleSide
+      });
+      const leaves = new THREE.InstancedMesh(leafGeo, leafMat, leafMax);
+      leaves.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(leafMax * 3), 3);
+      leaves.frustumCulled = false;
+      leaves.count = settings.leafCount;
+      root.add(leaves);
+
+      const leafState = [];
+      const leafColorSets = [
+        ["#e63c2e", "#d4452f", "#f05a3a", "#ff6b45", "#f5a623", "#ff8c42"],
+        ["#1a4a2a", "#224e30", "#2a5a38", "#1e4828", "#164020", "#2e6e3e"],
+        ["#ffb7c5", "#ff97b0", "#ffc8d6", "#fff0f5", "#ffd0db"],
+        ["#456f3a", "#5a8845", "#3a5e30", "#9a5226", "#b04030", "#345532"],
+        ["#2f7a36", "#54a04a", "#7ec06a", "#a8d068", "#388540", "#62b058"],
+        ["#1b5028", "#143f20", "#d92d1a", "#ff8418", "#f5c518", "#205830"],
+        ["#a87858", "#7a9a65", "#c8a050", "#ff9050", "#6a8a55", "#b88868"],
+        ["#2e6e34", "#358040", "#5a9a52", "#1a3e22", "#7ac070", "#4a9ec0"]
+      ];
+      for (let i = 0; i < leafMax; i++) {
+        resetLeaf(i, rng() * 6);
+      }
+
+      function resetLeaf(i, life = 0) {
+        const a = rng() * Math.PI * 2;
+        const r = rng() * 6;
+        leafState[i] = {
+          x: Math.cos(a) * r,
+          y: 18 + rng() * 8,
+          z: Math.sin(a) * r,
+          vx: (rng() - 0.5) * 0.8,
+          vy: -(1.5 + rng() * 1.5),
+          vz: (rng() - 0.5) * 0.8,
+          rotX: rng() * Math.PI * 2,
+          rotY: rng() * Math.PI * 2,
+          rotZ: rng() * Math.PI * 2,
+          spinX: (rng() - 0.5) * 2,
+          spinY: (rng() - 0.5) * 1.5,
+          spinZ: (rng() - 0.5) * 2,
+          scale: 0.25 + rng() * 0.45,
+          wobblePhase: rng() * Math.PI * 2,
+          wobbleFreq: 1.5 + rng() * 2,
+          wobbleAmp: 0.3 + rng() * 0.5,
+          life,
+          maxLife: 4 + rng() * 6
+        };
+      }
+
+      window.__updateParticles = (dt, now) => {
+        const t = Math.min(dt, 0.05);
+        const a = geo.attributes.position.array;
+        const seconds = now * 0.001;
+        const halfXZ = dustRangeXZ / 2;
+        const topY = dustBaseY + dustRangeY;
+        const dustCount = settings.dustCount;
+        geo.setDrawRange(0, dustCount);
+        for (let i = 0; i < dustCount; i++) {
+          a[i * 3] += (velocity[i * 3] + Math.sin(seconds * 0.5 + i * 0.7) * 0.06) * t;
+          a[i * 3 + 1] += (velocity[i * 3 + 1] + Math.sin(seconds * 0.3 + i * 1.1) * 0.03) * t;
+          a[i * 3 + 2] += (velocity[i * 3 + 2] + Math.cos(seconds * 0.4 + i * 0.9) * 0.06) * t;
+          if (a[i * 3] > halfXZ) a[i * 3] = -halfXZ;
+          if (a[i * 3] < -halfXZ) a[i * 3] = halfXZ;
+          if (a[i * 3 + 1] > topY) a[i * 3 + 1] = dustBaseY;
+          if (a[i * 3 + 1] < dustBaseY) a[i * 3 + 1] = topY;
+          if (a[i * 3 + 2] > halfXZ) a[i * 3 + 2] = -halfXZ;
+          if (a[i * 3 + 2] < -halfXZ) a[i * 3 + 2] = halfXZ;
+        }
+        geo.attributes.position.needsUpdate = true;
+
+        const leafCount = settings.leafCount;
+        leaves.count = leafCount;
+        const colors = leafColorSets[activeVariation] || leafColorSets[0];
+        if (leaves.userData.lastVariation !== activeVariation) {
+          leaves.userData.lastVariation = activeVariation;
+          for (let i = 0; i < leafMax; i++) {
+            tempColor.set(pick(colors));
+            leaves.setColorAt(i, tempColor);
+          }
+          leaves.instanceColor.needsUpdate = true;
+        }
+
+        for (let i = 0; i < leafCount; i++) {
+          const leaf = leafState[i];
+          leaf.life += t;
+          if (leaf.life >= leaf.maxLife || leaf.y < -16) {
+            resetLeaf(i);
+            tempColor.set(pick(colors));
+            leaves.setColorAt(i, tempColor);
+            leaves.instanceColor.needsUpdate = true;
+          }
+          const wobble = Math.sin(seconds * leaf.wobbleFreq + leaf.wobblePhase) * leaf.wobbleAmp;
+          leaf.x += (leaf.vx + wobble) * t;
+          leaf.y += leaf.vy * t;
+          leaf.z += (leaf.vz + Math.cos(seconds * leaf.wobbleFreq * 0.7 + leaf.wobblePhase) * leaf.wobbleAmp * 0.6) * t;
+          leaf.rotX += leaf.spinX * t;
+          leaf.rotY += leaf.spinY * t;
+          leaf.rotZ += leaf.spinZ * t;
+          const life = leaf.life / leaf.maxLife;
+          const fade = life < 0.1 ? life / 0.1 : life > 0.85 ? (1 - life) / 0.15 : 1;
+          tempObj.position.set(leaf.x, leaf.y, leaf.z);
+          tempObj.rotation.set(leaf.rotX, leaf.rotY, leaf.rotZ);
+          tempObj.scale.setScalar(leaf.scale * fade);
+          tempObj.updateMatrix();
+          leaves.setMatrixAt(i, tempObj.matrix);
+        }
+        leaves.instanceMatrix.needsUpdate = true;
+      };
+    }
+
+    function updateParticles(dt, now) {
+      window.__updateParticles?.(dt, now);
+    }
+
+    function updateLights(now) {
+      const phase = now * 0.001;
+      rim.intensity = 2.6 + Math.sin(phase * 0.7) * 0.35 + (hoverActive ? 0.45 : 0);
+      accent.intensity = 2.1 + Math.sin(phase * 0.53 + 1) * 0.3;
+      root.position.y = -0.6 + Math.sin(phase * 1.2) * 0.035;
+    }
+
+    function resize() {
+      const width = Math.max(1, stage.clientWidth);
+      const height = Math.max(1, stage.clientHeight);
+      renderer.setSize(width, height, false);
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+    }
+
+    function onPointerMove(event) {
+      const rect = renderer.domElement.getBoundingClientRect();
+      pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+      pointer.lastMove = performance.now();
+    }
+
+    function onPointerLeave() {
+      pointer.x = 9999;
+      pointer.y = 9999;
+      pointer.lastMove = -Infinity;
+    }
+
+    function pauseAfterInteraction() {
+      suppressAutoUntil = performance.now() + 5000;
+      controls.autoRotate = false;
+    }
+
+    function terrainNoise(x, z) {
+      return Math.sin(x * 1.7 + z * 0.9) * 0.4 +
+        Math.cos(z * 2.1 - x * 0.6) * 0.35 +
+        Math.sin((x + z) * 1.1) * 0.25;
+    }
+
+    function samplePath(points, t) {
+      const lengths = [];
+      let total = 0;
+      for (let i = 1; i < points.length; i++) {
+        const a = points[i - 1];
+        const b = points[i];
+        const len = Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]);
+        lengths.push(len);
+        total += len;
+      }
+      let acc = 0;
+      for (let i = 0; i < lengths.length; i++) {
+        const next = acc + lengths[i] / total;
+        if (t <= next) {
+          const local = (t - acc) / (next - acc || 1);
+          const a = points[i];
+          const b = points[i + 1];
+          return new THREE.Vector3(
+            a[0] + (b[0] - a[0]) * local,
+            a[1] + (b[1] - a[1]) * local,
+            a[2] + (b[2] - a[2]) * local
+          );
+        }
+        acc = next;
+      }
+      const last = points[points.length - 1];
+      return new THREE.Vector3(last[0], last[1], last[2]);
+    }
+
+    function randomUnitVector() {
+      const a = rng() * Math.PI * 2;
+      const p = Math.acos(2 * rng() - 1);
+      const s = Math.sin(p);
+      return new THREE.Vector3(s * Math.cos(a), s * Math.sin(a), Math.cos(p));
+    }
+
+    function pick(values) {
+      return values[Math.floor(rng() * values.length)];
+    }
+
+    function clamp(value) {
+      return Math.max(0, Math.min(1, value));
+    }
+
+    function easeInOutCubic(t) {
+      return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    }
+
+    function mulberry32(seed) {
+      return function random() {
+        let t = seed += 0x6D2B79F5;
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+  </script>
+</body>
+</html>
