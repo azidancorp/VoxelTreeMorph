@@ -116,6 +116,8 @@
       font-size: 13px;
       letter-spacing: 0.04em;
       min-width: 140px;
+      max-height: calc(100vh - 44px);
+      overflow-y: auto;
     }
 
     #picker button {
@@ -381,6 +383,7 @@
     <button type="button" data-variation="7">Mangrove</button>
     <button type="button" data-variation="8">Jacaranda</button>
     <button type="button" data-variation="9">Banyan</button>
+    <button type="button" data-variation="10">Banana</button>
   </nav>
 
   <script type="module">
@@ -521,6 +524,7 @@
     variations[7] = makeMangroveMap();
     variations[8] = makeJacarandaMap();
     variations[9] = makeBanyanMap();
+    variations[10] = makeBananaMap();
 
     const cube = new THREE.BoxGeometry(1, 1, 1);
     const material = new THREE.MeshStandardMaterial({
@@ -607,7 +611,7 @@
       hoverForce: 8.6,
       go: (index) => startMorph((index + variations.length) % variations.length),
       next: () => {
-        const order = [3, 0, 1, 2, 8, 4, 5, 6, 7, 9];
+        const order = [3, 0, 1, 2, 8, 4, 5, 10, 6, 7, 9];
         const next = order[(order.indexOf(activeVariation) + 1) % order.length];
         startMorph(next);
       },
@@ -1611,6 +1615,135 @@
       });
     }
 
+    function makeBananaMap() {
+      const leafDeep = ["#1f5a24", "#246629", "#1b4f20", "#2c6e2f", "#19481d"];
+      const leafMid = ["#4a9a38", "#58a842", "#3f8d32", "#66b24a", "#4f9f3e", "#5da84a"];
+      const leafLight = ["#86c858", "#94d468", "#76bd4e", "#a7df72", "#8fd05c"];
+      const rib = ["#d1d66a", "#bfd05a", "#e0e685", "#a9c34c"];
+      const sheath = ["#7b5a32", "#8a673d", "#6a4828", "#9a7446", "#5a3a22"];
+      const sheathGreen = ["#486d2e", "#557c38", "#3f6328", "#6c8e45"];
+      const banana = ["#f5d529", "#ffd83d", "#eac41f", "#ffe45a", "#d9b51c"];
+      const bananaTip = ["#7a6530", "#6a5528", "#5a4720", "#4a3818"];
+      const grass = ["#2f7434", "#3d873d", "#4a9946", "#27662e", "#5aa653", "#3c7d38"];
+      const soil = ["#4a2d18", "#5c351c", "#3a2414", "#6a4222", "#2e1c10"];
+
+      const crown = { x: 0, y: 15.1, z: 0 };
+      const bunchAnchor = { x: -1.65, y: 13.25, z: 1.08 };
+      const leaves = [
+        { angle: -2.88, length: 8.1, width: 1.32, rise: 2.0, lift: 1.1, droop: 3.8 },
+        { angle: -2.28, length: 9.4, width: 1.64, rise: 3.0, lift: 1.8, droop: 2.8 },
+        { angle: -1.55, length: 8.4, width: 1.52, rise: 4.2, lift: 3.0, droop: 0.9 },
+        { angle: -0.78, length: 9.6, width: 1.75, rise: 3.3, lift: 1.9, droop: 2.4 },
+        { angle: -0.08, length: 8.5, width: 1.42, rise: 2.1, lift: 0.7, droop: 4.4 },
+        { angle: 0.58, length: 9.0, width: 1.58, rise: 3.8, lift: 2.5, droop: 1.4 },
+        { angle: 1.35, length: 7.9, width: 1.34, rise: 4.4, lift: 3.4, droop: 0.8 },
+        { angle: 2.18, length: 9.2, width: 1.68, rise: 2.6, lift: 1.4, droop: 3.1 },
+        { angle: 2.86, length: 7.4, width: 1.23, rise: 1.6, lift: 0.8, droop: 3.9 }
+      ];
+
+      const placeBanana = (voxel, p) => {
+        const s = voxel.seed;
+        const row = Math.floor(s * 38) % 5;
+        const col = Math.floor(s * 127) % 7;
+        const u = (s * 29.7 + Math.abs(p.x) * 0.093 + Math.abs(p.z) * 0.071 + p.y * 0.019) % 1;
+        const fan = (col - 3) * 0.24 + Math.sin(row * 1.7) * 0.06;
+        const arc = (u - 0.5) * 1.35;
+        const curl = Math.sin(u * Math.PI);
+        p.x = bunchAnchor.x + fan + arc * 0.35 + curl * 0.12 + (rng() - 0.5) * 0.08;
+        p.z = bunchAnchor.z + row * 0.16 - col * 0.035 + (rng() - 0.5) * 0.1;
+        p.y = bunchAnchor.y - row * 0.48 - u * 1.25 + curl * 0.42 + (rng() - 0.5) * 0.09;
+        if (u < 0.11 || u > 0.9) return new THREE.Color(pick(bananaTip));
+        return new THREE.Color(pick(banana));
+      };
+
+      const placeLeafBlade = (voxel, p) => {
+        const s = voxel.seed;
+        if (s < 0.17) {
+          const t = (s * 7.3 + p.y * 0.033 + Math.abs(p.x) * 0.021) % 1;
+          const side = ((s * 41.0 + p.z * 0.13) % 1 - 0.5) * 1.25 * Math.sin(t * Math.PI);
+          p.x = side + Math.sin(t * Math.PI * 1.2) * 0.28 + (rng() - 0.5) * 0.08;
+          p.z = 0.1 + Math.cos(t * Math.PI) * 0.18 + (rng() - 0.5) * 0.16;
+          p.y = crown.y + t * 9.7 + Math.sin(t * Math.PI) * 0.75;
+          return new THREE.Color(pick(t < 0.18 || Math.abs(side) < 0.14 ? rib : leafLight));
+        }
+
+        const shifted = (s - 0.17) / 0.83;
+        const blade = leaves[Math.floor(shifted * leaves.length) % leaves.length];
+        const u = (shifted * 19.0 + Math.abs(p.y) * 0.037 + Math.abs(p.x) * 0.019) % 1;
+        const edgeSeed = (s * 83.0 + p.z * 0.17 + p.x * 0.09) % 1;
+        const bladeWidth = blade.width * Math.sin(Math.PI * u) * (0.72 + 0.18 * Math.sin(u * Math.PI * 3));
+        const side = (edgeSeed - 0.5) * 2 * bladeWidth;
+        const ragged = Math.abs(side) > bladeWidth * 0.72 && rng() < 0.42;
+        const split = Math.abs(side) < bladeWidth * 0.09;
+        const dirX = Math.cos(blade.angle);
+        const dirZ = Math.sin(blade.angle);
+        const sideX = Math.cos(blade.angle + Math.PI / 2);
+        const sideZ = Math.sin(blade.angle + Math.PI / 2);
+        const ripple = Math.sin(u * Math.PI * 7 + s * 23.0) * 0.14;
+        const tear = ragged ? (rng() - 0.5) * 0.55 : 0;
+        p.x = crown.x + dirX * blade.length * u + sideX * (side + tear) + (rng() - 0.5) * 0.12;
+        p.z = crown.z + dirZ * blade.length * u + sideZ * (side + tear) + (rng() - 0.5) * 0.12;
+        p.y = crown.y + blade.rise * Math.sin(u * Math.PI * 0.72) + blade.lift * u - blade.droop * u * u + ripple + (split ? 0.15 : 0);
+        if (split) return new THREE.Color(pick(rib));
+        if (ragged) return new THREE.Color(pick(rng() < 0.4 ? leafDeep : leafMid)).multiplyScalar(0.9);
+        return new THREE.Color(pick(u < 0.2 || edgeSeed > 0.78 ? leafLight : leafMid));
+      };
+
+      return makeMap((voxel) => {
+        const p = voxel.base.clone();
+        let color = voxel.color.clone();
+        if (voxel.role === "leaf") {
+          if (voxel.seed < 0.14) {
+            const t = (voxel.seed * 8.0 + p.y * 0.042 + Math.abs(p.x) * 0.017) % 1;
+            const angle = voxel.seed * Math.PI * 16 + p.z * 0.22;
+            const radius = 0.72 + 0.55 * (1 - t) + Math.sin(t * Math.PI * 5) * 0.08;
+            p.x = Math.cos(angle) * radius + Math.sin(t * Math.PI * 2) * 0.22 + (rng() - 0.5) * 0.1;
+            p.z = Math.sin(angle) * radius * 0.85 + (rng() - 0.5) * 0.1;
+            p.y = 1.2 + t * 14.0 + (rng() - 0.5) * 0.18;
+            color = new THREE.Color(pick(t > 0.62 ? sheathGreen : sheath));
+          } else if (voxel.seed < 0.26) {
+            color = placeBanana(voxel, p);
+          } else {
+            color = placeLeafBlade(voxel, p);
+          }
+        } else if (voxel.role === "trunk") {
+          const t = clamp((p.y - 5) / 9);
+          const angle = Math.atan2(p.z, Math.abs(p.x) > 0.01 ? p.x : 0.01) + t * 0.65;
+          const radius = 1.28 - t * 0.36 + Math.sin(t * Math.PI * 8 + angle) * 0.08;
+          p.x = Math.cos(angle) * radius + (rng() - 0.5) * 0.1;
+          p.z = Math.sin(angle) * radius * 0.82 + (rng() - 0.5) * 0.1;
+          p.y = 1.1 + t * 13.8 + (rng() - 0.5) * 0.18;
+          color = new THREE.Color(pick(t > 0.72 ? sheathGreen : sheath));
+        } else if (voxel.role === "flower" || voxel.role === "mushroom") {
+          color = placeBanana(voxel, p);
+        } else if (voxel.role === "grassTuft") {
+          const t = (voxel.seed * 13.0 + Math.abs(p.x) * 0.06) % 1;
+          const angle = voxel.seed * Math.PI * 18;
+          const radius = 1.1 + t * 1.4;
+          p.x = Math.cos(angle) * radius + (rng() - 0.5) * 0.1;
+          p.z = Math.sin(angle) * radius + (rng() - 0.5) * 0.1;
+          p.y = 0.9 + t * 5.2 + (rng() - 0.5) * 0.14;
+          color = new THREE.Color(pick(t > 0.48 ? sheathGreen : sheath));
+        } else if (voxel.role === "grass") {
+          p.x *= 1.2;
+          p.z *= 1.2;
+          p.y = Math.max(0, p.y) * 0.42;
+          color = new THREE.Color(pick(grass));
+        } else if (voxel.role === "underside") {
+          p.x *= 1.05;
+          p.z *= 1.05;
+          p.y *= 0.66;
+          color = new THREE.Color(pick(soil));
+        } else if (voxel.role === "rock") {
+          p.x *= 0.9;
+          p.z *= 0.9;
+          p.y = Math.min(p.y, 0.55);
+          color = new THREE.Color(pick(soil)).multiplyScalar(0.86);
+        }
+        return [p, color];
+      });
+    }
+
     function makeMap(transform) {
       const positions = new Array(voxels.length);
       const colors = new Array(voxels.length);
@@ -1686,7 +1819,7 @@
         return;
       }
       if (now - lastMorphAt >= settings.cycleMs) {
-        const order = [3, 0, 1, 2, 8, 4, 5, 6, 7, 9];
+        const order = [3, 0, 1, 2, 8, 4, 5, 10, 6, 7, 9];
         const next = order[(order.indexOf(activeVariation) + 1) % order.length];
         startMorph(next);
       }
@@ -1819,7 +1952,8 @@
         ["#a87858", "#7a9a65", "#c8a050", "#ff9050", "#6a8a55", "#b88868"],
         ["#2e6e34", "#358040", "#5a9a52", "#1a3e22", "#7ac070", "#4a9ec0"],
         ["#7b4cc4", "#9867ea", "#b184f4", "#c7a6ff", "#5c2c91", "#357a43"],
-        ["#143f22", "#367c40", "#78b765", "#6a4428", "#967050", "#2f7137"]
+        ["#143f22", "#367c40", "#78b765", "#6a4428", "#967050", "#2f7137"],
+        ["#4a9a38", "#66b24a", "#86c858", "#f5d529", "#ffd83d", "#7b5a32"]
       ];
       for (let i = 0; i < leafMax; i++) {
         resetLeaf(i, rng() * 6);
