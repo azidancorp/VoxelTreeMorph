@@ -386,6 +386,7 @@
     <button type="button" data-variation="9">Banyan</button>
     <button type="button" data-variation="10">Banana</button>
     <button type="button" data-variation="11">Date Palm</button>
+    <button type="button" data-variation="12">Weeping Willow</button>
   </nav>
 
   <script type="module">
@@ -528,6 +529,7 @@
     variations[9] = makeBanyanMap();
     variations[10] = makeBananaMap();
     variations[11] = makeDatePalmMap();
+    variations[12] = makeWeepingWillowMap();
 
     const cube = new THREE.BoxGeometry(1, 1, 1);
     const material = new THREE.MeshStandardMaterial({
@@ -614,7 +616,7 @@
       hoverForce: 8.6,
       go: (index) => startMorph((index + variations.length) % variations.length),
       next: () => {
-        const order = [3, 0, 1, 2, 8, 4, 5, 10, 11, 6, 7, 9];
+        const order = [3, 0, 1, 2, 8, 4, 5, 10, 11, 12, 6, 7, 9];
         const next = order[(order.indexOf(activeVariation) + 1) % order.length];
         startMorph(next);
       },
@@ -1908,6 +1910,134 @@
       });
     }
 
+    function makeWeepingWillowMap() {
+      const leafDeep = ["#1f5a35", "#28683f", "#194b2e", "#2d7043", "#225f39"];
+      const leafMid = ["#4a9a56", "#58aa62", "#3f8e4c", "#65b76b", "#4f9f58", "#5aa85a"];
+      const leafLight = ["#83c96f", "#94d87f", "#78bd66", "#a6e18e", "#8bd077"];
+      const leafYellow = ["#b2c86d", "#c0d37a", "#a5bc62", "#d1df8a"];
+      const whiteBark = ["#f4ead9", "#fff4df", "#e8dfcf", "#d9d1c4", "#f8f0e6"];
+      const barkShade = ["#b8aa94", "#c8baa5", "#a9967e", "#d2c7b6"];
+      const barkLine = ["#806d57", "#917c63", "#6e5e4d", "#a0886d"];
+      const grass = ["#3f8a3d", "#4b9848", "#5aa655", "#367c38", "#6bb760"];
+      const moss = ["#5a9d54", "#6baa62", "#78b86e", "#4f8f4a"];
+      const soil = ["#4a3520", "#5c4328", "#3a2a1b", "#6a4f30", "#2e2116"];
+      const stone = ["#a89f91", "#918879", "#b8afa0", "#80776b"];
+
+      const trunkPath = [
+        [0, 0.45, 0],
+        [-0.32, 5.0, 0.16],
+        [0.26, 9.3, -0.12],
+        [-0.12, 13.0, 0.1],
+        [0.18, 16.2, 0]
+      ];
+
+      const limbs = [
+        { angle: -2.95, start: 0.54, length: 10.6, lift: 2.8, sag: 2.1, hang: 9.8 },
+        { angle: -2.48, start: 0.62, length: 9.5, lift: 3.2, sag: 1.8, hang: 8.9 },
+        { angle: -1.96, start: 0.66, length: 11.2, lift: 2.9, sag: 2.0, hang: 10.0 },
+        { angle: -1.34, start: 0.72, length: 9.0, lift: 3.5, sag: 1.4, hang: 8.4 },
+        { angle: -0.78, start: 0.58, length: 11.6, lift: 2.6, sag: 2.4, hang: 10.2 },
+        { angle: -0.18, start: 0.64, length: 10.0, lift: 3.0, sag: 2.0, hang: 9.5 },
+        { angle: 0.42, start: 0.56, length: 11.8, lift: 2.7, sag: 2.3, hang: 10.4 },
+        { angle: 1.04, start: 0.68, length: 9.2, lift: 3.4, sag: 1.6, hang: 8.8 },
+        { angle: 1.58, start: 0.72, length: 10.4, lift: 3.1, sag: 1.8, hang: 9.4 },
+        { angle: 2.16, start: 0.6, length: 11.4, lift: 2.8, sag: 2.2, hang: 10.0 },
+        { angle: 2.72, start: 0.54, length: 10.2, lift: 2.6, sag: 2.1, hang: 9.7 }
+      ];
+
+      const limbPoint = (limb, along) => {
+        const base = samplePath(trunkPath, limb.start);
+        const lift = limb.lift * Math.sin(along * Math.PI * 0.82);
+        const sag = limb.sag * along * along;
+        return {
+          x: base.x + Math.cos(limb.angle) * limb.length * along,
+          y: base.y + lift - sag,
+          z: base.z + Math.sin(limb.angle) * limb.length * along
+        };
+      };
+
+      const placeWhiteTrunk = (voxel, p) => {
+        const t = clamp((voxel.base.y - 4.8) / 10.8);
+        const center = samplePath(trunkPath, t);
+        const angle = Math.atan2(voxel.base.z, Math.abs(voxel.base.x) > 0.01 ? voxel.base.x : 0.01) + t * 0.85;
+        const ripple = Math.sin(t * Math.PI * 18 + angle * 5);
+        const radius = 1.65 - t * 0.52 + ripple * 0.08;
+        p.x = center.x + Math.cos(angle) * radius + (rng() - 0.5) * 0.12;
+        p.z = center.z + Math.sin(angle) * radius * 0.92 + (rng() - 0.5) * 0.12;
+        p.y = center.y + (rng() - 0.5) * 0.2;
+        const lit = Math.cos(angle) > -0.1;
+        if (ripple > 0.72) return new THREE.Color(pick(barkLine));
+        return new THREE.Color(pick(lit ? whiteBark : barkShade));
+      };
+
+      const placeWhiteLimb = (voxel, p) => {
+        const s = voxel.seed;
+        const limb = limbs[Math.floor((s * 67.0 + Math.abs(voxel.base.z) * 0.13) % limbs.length)];
+        const along = (s * 31.0 + Math.abs(voxel.base.y) * 0.041 + Math.abs(voxel.base.x) * 0.019) % 1;
+        const branch = limbPoint(limb, along);
+        const taper = 0.92 * (1 - along) + 0.2;
+        const side = Math.sin(s * 91.0 + voxel.base.z) * taper;
+        p.x = branch.x + Math.cos(limb.angle + Math.PI / 2) * side + (rng() - 0.5) * taper * 0.5;
+        p.z = branch.z + Math.sin(limb.angle + Math.PI / 2) * side + (rng() - 0.5) * taper * 0.5;
+        p.y = branch.y + Math.cos(s * 47.0 + voxel.base.x) * taper * 0.55 + (rng() - 0.5) * 0.14;
+        return new THREE.Color(pick(along < 0.28 || Math.cos(limb.angle) > 0.15 ? whiteBark : barkShade));
+      };
+
+      const placeCurtainLeaf = (voxel, p) => {
+        const s = voxel.seed;
+        const limb = limbs[Math.floor((s * 97.0 + Math.abs(p.x) * 0.11 + p.z * 0.07) % limbs.length)];
+        const along = 0.56 + ((s * 23.0 + Math.abs(p.z) * 0.035) % 0.4);
+        const drop = (s * 43.0 + Math.abs(p.y) * 0.037 + Math.abs(p.x) * 0.021) % 1;
+        const anchor = limbPoint(limb, along);
+        const sideSeed = (s * 137.0 + p.z * 0.15 + p.x * 0.08) % 1;
+        const strandSide = (sideSeed - 0.5) * (1.25 + along * 1.15);
+        const sway = Math.sin(drop * Math.PI * 5 + s * 22.0) * 0.34;
+        const dirX = Math.cos(limb.angle);
+        const dirZ = Math.sin(limb.angle);
+        const sideX = Math.cos(limb.angle + Math.PI / 2);
+        const sideZ = Math.sin(limb.angle + Math.PI / 2);
+        const outward = 0.72 + drop * 0.22;
+        p.x = anchor.x + sideX * strandSide + dirX * (sway * 0.38 + outward) + (rng() - 0.5) * 0.13;
+        p.z = anchor.z + sideZ * strandSide + dirZ * (sway * 0.38 + outward) + (rng() - 0.5) * 0.13;
+        p.y = anchor.y - drop * limb.hang + Math.sin(drop * Math.PI) * 0.18 + (rng() - 0.5) * 0.1;
+        if (drop > 0.82 && rng() < 0.32) return new THREE.Color(pick(leafYellow));
+        if (sideSeed > 0.78 || drop < 0.18) return new THREE.Color(pick(leafLight));
+        return new THREE.Color(pick(rng() < 0.6 ? leafMid : leafDeep));
+      };
+
+      return makeMap((voxel) => {
+        const p = voxel.base.clone();
+        let color = voxel.color.clone();
+        if (voxel.role === "leaf") {
+          if (voxel.seed < 0.34) {
+            color = placeWhiteLimb(voxel, p);
+          } else {
+            color = placeCurtainLeaf(voxel, p);
+          }
+        } else if (voxel.role === "trunk") {
+          color = placeWhiteTrunk(voxel, p);
+        } else if (voxel.role === "flower" || voxel.role === "mushroom" || voxel.role === "grassTuft") {
+          color = voxel.seed < 0.34 ? placeWhiteLimb(voxel, p) : placeCurtainLeaf(voxel, p);
+        } else if (voxel.role === "grass") {
+          p.x *= 1.18;
+          p.z *= 1.18;
+          p.y = Math.max(0, p.y) * 0.48;
+          color = new THREE.Color(pick(rng() < 0.35 ? moss : grass));
+        } else if (voxel.role === "underside") {
+          p.x *= 1.03;
+          p.z *= 1.03;
+          p.y *= 0.64;
+          color = new THREE.Color(pick(soil));
+        } else if (voxel.role === "rock") {
+          p.x *= 0.95;
+          p.z *= 0.95;
+          p.y = Math.min(p.y, 0.55);
+          color = new THREE.Color(pick(rng() < 0.45 ? stone : soil)).multiplyScalar(0.9);
+        }
+        return [p, color];
+      });
+    }
+
     function makeMap(transform) {
       const positions = new Array(voxels.length);
       const colors = new Array(voxels.length);
@@ -1983,7 +2113,7 @@
         return;
       }
       if (now - lastMorphAt >= settings.cycleMs) {
-        const order = [3, 0, 1, 2, 8, 4, 5, 10, 11, 6, 7, 9];
+        const order = [3, 0, 1, 2, 8, 4, 5, 10, 11, 12, 6, 7, 9];
         const next = order[(order.indexOf(activeVariation) + 1) % order.length];
         startMorph(next);
       }
@@ -2118,7 +2248,8 @@
         ["#7b4cc4", "#9867ea", "#b184f4", "#c7a6ff", "#5c2c91", "#357a43"],
         ["#143f22", "#367c40", "#78b765", "#6a4428", "#967050", "#2f7137"],
         ["#4a9a38", "#66b24a", "#86c858", "#f5d529", "#ffd83d", "#7b5a32"],
-        ["#3d8a3e", "#79bf5c", "#5a2f18", "#7a4424", "#a98a47", "#8a6540"]
+        ["#3d8a3e", "#79bf5c", "#5a2f18", "#7a4424", "#a98a47", "#8a6540"],
+        ["#7fc66c", "#9bdc85", "#2d7a43", "#f2eadb", "#d8d1c4", "#5aa85a"]
       ];
       for (let i = 0; i < leafMax; i++) {
         resetLeaf(i, rng() * 6);
