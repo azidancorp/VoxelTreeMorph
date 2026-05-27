@@ -147,6 +147,42 @@
       box-shadow: 0 0 12px rgba(255, 140, 60, 0.45);
     }
 
+    #repo-link {
+      position: fixed;
+      bottom: 22px;
+      left: 22px;
+      z-index: 10;
+      display: inline-flex;
+      align-items: center;
+      min-height: 38px;
+      padding: 0 16px;
+      border-radius: 6px;
+      border: 1px solid rgba(220, 180, 130, 0.22);
+      background: rgba(12, 8, 5, 0.6);
+      color: #e8d2b0;
+      text-decoration: none;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 6px 30px rgba(0, 0, 0, 0.4);
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      transition: background 160ms ease, color 160ms ease, border-color 160ms ease, transform 120ms ease;
+    }
+
+    #repo-link:hover {
+      background: rgba(80, 50, 28, 0.7);
+      border-color: rgba(255, 200, 140, 0.45);
+    }
+
+    #repo-link:active {
+      transform: translateY(1px);
+    }
+
+    #repo-link:focus-visible {
+      outline: 2px solid #ffb766;
+      outline-offset: 3px;
+    }
+
     #settings {
       position: fixed;
       top: 22px;
@@ -285,6 +321,14 @@
     <div class="fallback">This browser needs WebGL to render the voxel tree.</div>
     <div class="grain" aria-hidden="true"></div>
   </main>
+
+  <a
+    id="repo-link"
+    href="https://github.com/azidancorp/VoxelTreeMorph"
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label="Open VoxelTreeMorph repository on GitHub"
+  >GitHub Repo</a>
 
   <section id="settings" aria-label="scene controls">
     <h3>Controls</h3>
