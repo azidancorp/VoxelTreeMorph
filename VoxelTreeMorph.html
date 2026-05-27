@@ -840,6 +840,41 @@
         }
       }),
       makeTreeVariation({
+        id: "bamboo-grove",
+        label: "Bamboo Grove",
+        map: makeBambooGroveMap,
+        cycleOrder: 7.5,
+        particlePalette: ["#6ea63f", "#8fbd4c", "#b6cf61", "#a8d56a", "#2f6e38", "#d7c76c"],
+        camera: { position: [14.4, 11.2, 31.8], target: [0, 5.0, 0], distance: 29.8, minDistance: 12, maxDistance: 42, rootScale: 0.38 },
+        uiAccent: {
+          panel: "rgba(6, 16, 8, 0.64)",
+          hover: "rgba(40, 82, 35, 0.72)",
+          button: "rgba(20, 48, 22, 0.58)",
+          border: "rgba(184, 213, 92, 0.2)",
+          buttonBorder: "rgba(184, 213, 92, 0.25)",
+          borderActive: "rgba(228, 242, 142, 0.62)",
+          text: "#edf5d5",
+          muted: "#b6cf61",
+          accent: "#b8d55c",
+          strong: "#5d9b38",
+          dark: "#071008",
+          glow: "rgba(184, 213, 92, 0.38)"
+        },
+        scene: {
+          clear: "#030704",
+          background: "radial-gradient(circle at 50% 47%, rgba(93, 145, 55, 0.3), rgba(26, 61, 29, 0.43) 43%, rgba(3, 7, 4, 0.98) 80%), #030704",
+          fog: { color: "#0b1708", density: 0.019 },
+          lighting: {
+            hemisphere: { sky: "#ecffc7", ground: "#0c1b09", intensity: 1.08 },
+            ambient: { color: "#d6ec98", intensity: 0.44 },
+            key: { color: "#fff0b0", intensity: 4.05, position: [5.8, 15, 5.2] },
+            fill: { color: "#5fb777", intensity: 1.02 },
+            rim: { color: "#b6cf61", pulseBase: 2.45 },
+            accent: { color: "#79c65b", pulseBase: 2.05 }
+          }
+        }
+      }),
+      makeTreeVariation({
         id: "date-palm",
         label: "Date Palm",
         map: makeDatePalmMap,
@@ -2305,6 +2340,179 @@
           p.z *= 0.9;
           p.y = Math.min(p.y, 0.55);
           color = new THREE.Color(pick(soil)).multiplyScalar(0.86);
+        }
+        return [p, color];
+      });
+    }
+
+    function makeBambooGroveMap() {
+      const culmDark = ["#3f7629", "#4a8430", "#356823", "#528c34", "#477b2d"];
+      const culmMid = ["#6aa33c", "#76ad45", "#5f9737", "#82b84b", "#6fa840"];
+      const culmLight = ["#9fc84e", "#b1d45d", "#c3df72", "#94bd47", "#d3e585"];
+      const node = ["#d4cf67", "#bfc457", "#a9b84e", "#8da63e", "#e2df82"];
+      const sheath = ["#7a6a35", "#8f7c3e", "#66592e", "#9a8848", "#5f542b"];
+      const leafDeep = ["#1f5a2f", "#245f34", "#194c29", "#2c6e38", "#205833"];
+      const leafMid = ["#3f8a44", "#4a984d", "#347c3e", "#55a653", "#428f46"];
+      const leafLight = ["#84c85d", "#93d36b", "#a8d56a", "#78bd57", "#b7df82"];
+      const rib = ["#dce78b", "#cbdc76", "#edf1a0", "#b7cc62"];
+      const ground = ["#2f7434", "#3c8738", "#4a9442", "#29682f", "#548f45"];
+      const moss = ["#637b36", "#718a3e", "#526f30", "#809349"];
+      const soil = ["#382a16", "#46351d", "#2e2213", "#524024", "#241b10"];
+      const stone = ["#81795f", "#92896c", "#6d654f", "#a39a7a"];
+
+      const fract = (value) => value - Math.floor(value);
+      const hash01 = (value) => fract(Math.sin(value * 127.1 + 311.7) * 43758.5453123);
+      const choose = (values, key) => values[Math.floor(hash01(key) * values.length) % values.length];
+      const culms = [
+        { x: -10.0, z: -6.0, h: 19.8, lean: 0.34, angle: -0.45, node: 1.9, phase: 0.12 },
+        { x: -10.2, z: 3.9, h: 17.4, lean: 0.28, angle: 0.3, node: 2.1, phase: 0.58 },
+        { x: -7.2, z: -1.1, h: 25.2, lean: 0.42, angle: -0.08, node: 1.8, phase: 0.36 },
+        { x: -5.2, z: 6.2, h: 18.9, lean: 0.31, angle: 0.64, node: 2.0, phase: 0.74 },
+        { x: -2.7, z: -6.8, h: 23.4, lean: 0.46, angle: -0.72, node: 1.85, phase: 0.22 },
+        { x: -1.0, z: 1.1, h: 28.2, lean: 0.25, angle: 0.14, node: 2.16, phase: 0.46 },
+        { x: 1.5, z: 6.8, h: 21.4, lean: 0.38, angle: 0.88, node: 1.95, phase: 0.67 },
+        { x: 3.7, z: -3.8, h: 26.6, lean: 0.33, angle: -0.34, node: 2.05, phase: 0.31 },
+        { x: 5.8, z: 2.9, h: 22.7, lean: 0.43, angle: 0.52, node: 1.88, phase: 0.81 },
+        { x: 7.4, z: -6.1, h: 19.7, lean: 0.4, angle: -0.5, node: 2.12, phase: 0.18 },
+        { x: 9.5, z: -1.2, h: 27.5, lean: 0.3, angle: 0.18, node: 1.92, phase: 0.51 },
+        { x: 10.0, z: 5.4, h: 18.2, lean: 0.36, angle: 0.72, node: 2.2, phase: 0.05 }
+      ];
+
+      const culmIndex = (voxel, offset = 0) => (
+        Math.floor(hash01(voxel.seed * 19.73 + voxel.base.x * 0.17 + voxel.base.y * 0.07 + voxel.base.z * 0.11 + offset) * culms.length) % culms.length
+      );
+
+      const culmCenter = (culm, t) => {
+        const bow = Math.sin(t * Math.PI * 0.9 + culm.phase * Math.PI * 2) * culm.lean * t;
+        const cross = Math.sin(t * Math.PI * 3.1 + culm.phase * 5.7) * 0.04 * t;
+        return {
+          x: culm.x + Math.cos(culm.angle) * bow + Math.cos(culm.angle + Math.PI / 2) * cross,
+          y: 0.55 + t * culm.h,
+          z: culm.z + Math.sin(culm.angle) * bow + Math.sin(culm.angle + Math.PI / 2) * cross
+        };
+      };
+
+      const placeCulm = (voxel, p, forceNode = false, offset = 0) => {
+        const ci = culmIndex(voxel, offset);
+        const culm = culms[ci];
+        const maxNode = Math.max(3, Math.floor(culm.h / culm.node) - 1);
+        let t = hash01(voxel.seed * 31.7 + voxel.base.y * 0.061 + Math.abs(voxel.base.x) * 0.037 + offset);
+        if (forceNode) {
+          const nodeIndex = 1 + Math.floor(hash01(voxel.seed * 53.1 + voxel.base.x * 0.19 + offset) * maxNode);
+          t = clamp((nodeIndex * culm.node + culm.phase * 0.45) / culm.h);
+        }
+
+        const quantizedY = Math.round(t * culm.h * 1.05) / 1.05;
+        t = clamp(quantizedY / culm.h);
+        const center = culmCenter(culm, t);
+        const segment = (center.y - 0.55) / culm.node + culm.phase;
+        const segmentEdge = Math.min(fract(segment), 1 - fract(segment));
+        const isNode = forceNode || segmentEdge < 0.075;
+        const jitter = isNode ? 0.18 : 0.08;
+        p.x = center.x + (hash01(voxel.seed * 41.9 + offset) - 0.5) * jitter;
+        p.z = center.z + (hash01(voxel.seed * 37.4 + offset) - 0.5) * jitter;
+        p.y = center.y + (hash01(voxel.seed * 23.6 + offset) - 0.5) * (isNode ? 0.08 : 0.22);
+
+        if (isNode) return new THREE.Color(choose(node, voxel.seed * 17.0 + ci + segment));
+        const lit = hash01(ci * 9.1 + segment) > 0.42;
+        const palette = lit && fract(segment) > 0.42 ? culmLight : hash01(voxel.seed * 11.3 + ci) > 0.35 ? culmMid : culmDark;
+        return new THREE.Color(choose(palette, voxel.seed * 29.0 + segment));
+      };
+
+      const placeLeafSpray = (voxel, p, offset = 0) => {
+        const ci = culmIndex(voxel, 7.5 + offset);
+        const culm = culms[ci];
+        const maxNode = Math.max(4, Math.floor(culm.h / culm.node) - 3);
+        const firstLeafNode = Math.max(3, Math.floor(maxNode * 0.52));
+        const nodeSpan = Math.max(1, maxNode - firstLeafNode);
+        const nodeIndex = firstLeafNode + Math.floor(hash01(voxel.seed * 71.0 + voxel.base.z * 0.23 + offset) * nodeSpan);
+        const t = clamp((nodeIndex * culm.node + culm.phase * 0.45) / culm.h);
+        const center = culmCenter(culm, t);
+        const whorl = Math.floor(hash01(voxel.seed * 89.0 + voxel.base.x * 0.13 + offset) * 4);
+        const dir = hash01(ci * 13.9 + nodeIndex * 1.7 + whorl * 2.3) * Math.PI * 2 + (whorl - 1.5) * 0.16;
+        const u = hash01(voxel.seed * 41.0 + Math.abs(voxel.base.y) * 0.037 + Math.abs(voxel.base.x) * 0.021 + offset);
+        const edgeSeed = hash01(voxel.seed * 83.0 + voxel.base.z * 0.17 + voxel.base.x * 0.09 + offset);
+        const bladeLength = 1.4 + hash01(voxel.seed * 77.7 + nodeIndex + offset) * 1.8;
+        const width = (edgeSeed - 0.5) * 2 * (0.04 + 0.14 * Math.sin(Math.PI * u));
+        const dirX = Math.cos(dir);
+        const dirZ = Math.sin(dir);
+        const sideX = Math.cos(dir + Math.PI / 2);
+        const sideZ = Math.sin(dir + Math.PI / 2);
+        const droop = 0.32 + t * 0.8 + hash01(voxel.seed * 101.0 + offset) * 0.26;
+        p.x = center.x + dirX * (0.38 + u * bladeLength) + sideX * width + (hash01(voxel.seed * 17.4 + offset) - 0.5) * 0.05;
+        p.z = center.z + dirZ * (0.38 + u * bladeLength) + sideZ * width + (hash01(voxel.seed * 19.8 + offset) - 0.5) * 0.05;
+        p.y = center.y + 0.2 + Math.sin(u * Math.PI) * 0.24 - u * droop + (whorl - 1.5) * 0.04;
+
+        if (u < 0.08) return new THREE.Color(choose(sheath, voxel.seed * 37.0 + nodeIndex));
+        if (Math.abs(width) < 0.045 || edgeSeed > 0.86) return new THREE.Color(choose(rib, voxel.seed * 43.0 + u));
+        if (u > 0.84) return new THREE.Color(choose(hash01(voxel.seed * 59.0) > 0.45 ? leafDeep : leafMid, voxel.seed * 61.0));
+        return new THREE.Color(choose(edgeSeed > 0.7 ? leafLight : leafMid, voxel.seed * 67.0 + u));
+      };
+
+      const placeShoot = (voxel, p, offset = 0) => {
+        const ci = culmIndex(voxel, 13.5 + offset);
+        const culm = culms[ci];
+        const t = hash01(voxel.seed * 31.0 + voxel.base.y * 0.049 + offset);
+        const h = 1.8 + hash01(voxel.seed * 73.0 + ci) * 4.2;
+        const baseA = hash01(voxel.seed * 43.0 + ci) * Math.PI * 2;
+        const baseR = 0.18 + hash01(voxel.seed * 29.0 + offset) * 0.42;
+        const seg = t * h / 1.15;
+        const isNode = Math.min(fract(seg), 1 - fract(seg)) < 0.11;
+        const jitter = isNode ? 0.14 : 0.06;
+        p.x = culm.x + Math.cos(baseA) * baseR + (hash01(voxel.seed * 91.0 + offset) - 0.5) * jitter;
+        p.z = culm.z + Math.sin(baseA) * baseR + (hash01(voxel.seed * 93.0 + offset) - 0.5) * jitter;
+        p.y = 0.45 + t * h + (hash01(voxel.seed * 11.0 + offset) - 0.5) * 0.12;
+        return new THREE.Color(choose(isNode ? node : hash01(voxel.seed * 97.0) > 0.45 ? culmLight : culmMid, voxel.seed * 23.0 + t));
+      };
+
+      const placeGroundScatter = (voxel, p, offset = 0) => {
+        const x = voxel.base.x * 1.58 + (hash01(voxel.seed * 43.0 + offset) - 0.5) * 1.25;
+        const z = voxel.base.z * 1.42 + (hash01(voxel.seed * 47.0 + offset) - 0.5) * 1.2;
+        p.x = Math.max(-11.4, Math.min(11.4, x));
+        p.z = Math.max(-8.8, Math.min(8.8, z));
+        p.y = 0.12 + hash01(voxel.seed * 53.0 + offset) * 1.25;
+        const palette = hash01(voxel.seed * 59.0 + offset) > 0.5 ? ground : moss;
+        return new THREE.Color(choose(palette, voxel.seed * 61.0 + offset));
+      };
+
+      return makeMap((voxel) => {
+        const p = voxel.base.clone();
+        let color = voxel.color.clone();
+        if (voxel.role === "leaf") {
+          if (voxel.seed < 0.3) {
+            color = placeCulm(voxel, p);
+          } else if (voxel.seed < 0.36) {
+            color = placeCulm(voxel, p, true, 1.7);
+          } else if (voxel.seed < 0.42) {
+            color = placeLeafSpray(voxel, p);
+          } else {
+            color = placeGroundScatter(voxel, p, 1.0);
+          }
+        } else if (voxel.role === "trunk") {
+          color = placeCulm(voxel, p, voxel.seed > 0.58, 3.2);
+        } else if (voxel.role === "grassTuft") {
+          color = voxel.seed < 0.38 ? placeShoot(voxel, p, 2.0) : placeGroundScatter(voxel, p, 2.0);
+        } else if (voxel.role === "flower" || voxel.role === "mushroom") {
+          color = voxel.seed < 0.28 ? placeShoot(voxel, p, 4.0) : placeGroundScatter(voxel, p, 4.0);
+        } else if (voxel.role === "grass") {
+          if (voxel.seed < 0.03) {
+            color = placeShoot(voxel, p, 6.0);
+          } else {
+            p.x *= 1.74;
+            p.z *= 1.58;
+            p.y = Math.max(0, p.y) * 0.28 - 0.05 + (hash01(voxel.seed * 53.0) - 0.5) * 0.08;
+            color = new THREE.Color(choose(hash01(voxel.seed * 31.0) > 0.42 ? ground : moss, voxel.seed * 47.0));
+          }
+        } else if (voxel.role === "underside") {
+          p.x *= 1.62;
+          p.z *= 1.48;
+          p.y *= 0.58;
+          color = new THREE.Color(choose(soil, voxel.seed * 41.0));
+        } else if (voxel.role === "rock") {
+          p.x *= 1.42;
+          p.z *= 1.3;
+          p.y = Math.min(p.y, 0.42);
+          color = new THREE.Color(choose(hash01(voxel.seed * 17.0) > 0.45 ? stone : soil, voxel.seed * 19.0)).multiplyScalar(0.88);
         }
         return [p, color];
       });
