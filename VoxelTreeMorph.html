@@ -894,6 +894,41 @@
             accent: { color: "#9bdc85", pulseBase: 2.0 }
           }
         }
+      }),
+      makeTreeVariation({
+        id: "redwood",
+        label: "Redwood",
+        map: makeRedwoodMap,
+        cycleOrder: 13,
+        particlePalette: ["#1f4527", "#2a5832", "#3a8244", "#7a3d20", "#a8552a", "#173a1e"],
+        camera: { position: [14.5, 14, 32.3], target: [0, 7.2, 0], distance: 30.6, minDistance: 13.6, maxDistance: 40.0, rootScale: 0.44 },
+        uiAccent: {
+          panel: "rgba(18, 9, 6, 0.64)",
+          hover: "rgba(96, 48, 30, 0.72)",
+          button: "rgba(48, 24, 16, 0.58)",
+          border: "rgba(220, 132, 76, 0.22)",
+          buttonBorder: "rgba(220, 132, 76, 0.26)",
+          borderActive: "rgba(255, 196, 144, 0.6)",
+          text: "#f3dcc6",
+          muted: "#cf9468",
+          accent: "#e89464",
+          strong: "#a14a26",
+          dark: "#180a05",
+          glow: "rgba(220, 110, 55, 0.42)"
+        },
+        scene: {
+          clear: "#050605",
+          background: "radial-gradient(circle at 50% 46%, rgba(118, 70, 36, 0.32), rgba(36, 32, 22, 0.42) 42%, rgba(5, 6, 5, 0.98) 79%), #050605",
+          fog: { color: "#0e1209", density: 0.022 },
+          lighting: {
+            hemisphere: { sky: "#f0d9a8", ground: "#101808", intensity: 1.0 },
+            ambient: { color: "#caa372", intensity: 0.42 },
+            key: { color: "#f7d8a4", intensity: 4.0, position: [5.4, 16, 5.0] },
+            fill: { color: "#3f7044", intensity: 1.0 },
+            rim: { color: "#d97a30", pulseBase: 2.4 },
+            accent: { color: "#5fa45a", pulseBase: 1.9 }
+          }
+        }
       })
     ];
 
@@ -2559,6 +2594,122 @@
           p.z *= 0.95;
           p.y = Math.min(p.y, 0.55);
           color = new THREE.Color(pick(rng() < 0.45 ? stone : soil)).multiplyScalar(0.9);
+        }
+        return [p, color];
+      });
+    }
+
+    function makeRedwoodMap() {
+      const needleDeep = ["#0e3a1e", "#123e22", "#0a3018", "#173a1e", "#103d20"];
+      const needleMid = ["#1f5a2e", "#235e32", "#1a522a", "#286a36", "#2b6432"];
+      const needleLight = ["#3a8244", "#458b4c", "#357a3e", "#4a9050", "#3f8c46"];
+      const needleSun = ["#5fa45a", "#6dab62", "#73b56b", "#88c47a"];
+      const cone = ["#5a3a20", "#704624", "#3e2914", "#6a4220"];
+      const barkRed = ["#7a3920", "#8a4528", "#5e2e18", "#9a4f2e", "#6a341c", "#a85a34"];
+      const barkDark = ["#3a1e10", "#42220f", "#2a1408", "#4a2814"];
+      const barkLight = ["#b06440", "#bd724a", "#a05a38", "#c97a52"];
+      const moss = ["#3a6e3a", "#4a7e44", "#2e5e2e", "#56875a"];
+      const duff = ["#3a2814", "#46301a", "#2e1f0e", "#54391f", "#241a0e"];
+      const fern = ["#2c6e36", "#387c3c", "#447e42", "#2a6230"];
+      const sorrel = ["#7a3d20", "#8a4825", "#65331b"];
+
+      const trunkBaseY = -0.4;
+      const trunkTopY = 33.0;
+      const trunkH = trunkTopY - trunkBaseY;
+      const canopyBaseY = 13.0;
+      const canopyTopY = 36.0;
+      const canopyH = canopyTopY - canopyBaseY;
+      const canopyMaxRadius = 5.0;
+
+      const trunkRadius = (yt) => {
+        const t = clamp((yt - trunkBaseY) / trunkH);
+        return 0.5 + 1.55 * Math.pow(1 - t, 1.35);
+      };
+
+      const canopyRadius = (yt) => {
+        const t = clamp((yt - canopyBaseY) / canopyH);
+        return canopyMaxRadius * (1 - Math.pow(t, 1.15)) * (1 + Math.sin(t * Math.PI) * 0.06);
+      };
+
+      return makeMap((voxel) => {
+        const p = voxel.base.clone();
+        let color = voxel.color.clone();
+        if (voxel.role === "leaf") {
+          const s = voxel.seed;
+          if (s < 0.22) {
+            const t = (s * 17.0 + p.y * 0.029 + Math.abs(p.x) * 0.013) % 1;
+            const yt = trunkBaseY + t * trunkH * 0.97;
+            const angle = s * Math.PI * 31 + p.x * 0.17 + p.z * 0.11;
+            const flute = Math.sin(angle * 6 + yt * 0.22) * 0.18;
+            if (s < 0.05) {
+              const r = canopyRadius(yt) * 0.3 + trunkRadius(yt) + 0.35;
+              p.x = Math.cos(angle) * r + (rng() - 0.5) * 0.22;
+              p.z = Math.sin(angle) * r + (rng() - 0.5) * 0.22;
+              p.y = yt + (rng() - 0.5) * 0.35;
+              color = new THREE.Color(pick(rng() < 0.4 ? cone : barkDark));
+            } else {
+              const r = trunkRadius(yt) + flute + (rng() - 0.5) * 0.18;
+              p.x = Math.cos(angle) * r + (rng() - 0.5) * 0.14;
+              p.z = Math.sin(angle) * r + (rng() - 0.5) * 0.14;
+              p.y = yt + (rng() - 0.5) * 0.3;
+              const lit = Math.cos(angle) > 0.1;
+              let palette;
+              if (flute < -0.08) palette = barkDark;
+              else if (lit && rng() < 0.42) palette = barkLight;
+              else palette = barkRed;
+              color = new THREE.Color(pick(palette));
+            }
+          } else {
+            const u = (s * 7.1 + Math.abs(p.y) * 0.013 + Math.abs(p.x) * 0.007) % 1;
+            const yt = canopyBaseY + u * canopyH;
+            const maxR = canopyRadius(yt);
+            const angle = s * Math.PI * 27 + p.x * 0.31 + p.z * 0.17;
+            const radialT = Math.sqrt((s * 41.3 + Math.abs(p.x) * 0.07 + Math.abs(p.z) * 0.05) % 1);
+            const rad = maxR * (0.22 + radialT * 0.86);
+            const drape = Math.sin(u * Math.PI * 9 + angle * 0.5) * 0.4;
+            p.x = Math.cos(angle) * rad + (rng() - 0.5) * 0.4;
+            p.z = Math.sin(angle) * rad + (rng() - 0.5) * 0.4;
+            p.y = yt - rad * 0.18 + drape + (rng() - 0.5) * 0.42;
+            const heightRatio = clamp((p.y - canopyBaseY) / canopyH);
+            const outward = rad / Math.max(0.4, maxR);
+            const lit = outward > 0.6;
+            const r = rng();
+            let palette;
+            if (heightRatio > 0.8 && r < 0.55) palette = needleSun;
+            else if (lit && heightRatio > 0.45) palette = needleLight;
+            else if (heightRatio > 0.35) palette = r < 0.55 ? needleMid : needleDeep;
+            else palette = r < 0.32 ? needleMid : needleDeep;
+            color = new THREE.Color(pick(palette));
+          }
+        } else if (voxel.role === "trunk") {
+          const t = clamp((p.y - 5) / 9);
+          const yt = trunkBaseY + t * trunkH;
+          const ring = Math.atan2(p.z, Math.abs(p.x) > 0.01 ? p.x : 0.01);
+          const flute = Math.sin(ring * 6 + yt * 0.22) * 0.18;
+          const radius = trunkRadius(yt) + flute;
+          p.x = Math.cos(ring) * radius + (rng() - 0.5) * 0.16;
+          p.z = Math.sin(ring) * radius + (rng() - 0.5) * 0.16;
+          p.y = yt + (rng() - 0.5) * 0.26;
+          const lit = Math.cos(ring) > 0.1;
+          let palette;
+          if (flute < -0.08) palette = barkDark;
+          else if (lit && rng() < 0.4) palette = barkLight;
+          else palette = barkRed;
+          color = new THREE.Color(pick(palette));
+        } else if (voxel.role === "grass" || voxel.role === "grassTuft") {
+          p.x *= 1.12;
+          p.z *= 1.12;
+          p.y = Math.max(0, p.y) * 0.42;
+          color = new THREE.Color(pick(rng() < 0.5 ? moss : fern));
+        } else if (voxel.role === "underside") {
+          p.x *= 1.05;
+          p.z *= 1.05;
+          p.y *= 0.6;
+          color = new THREE.Color(pick(duff));
+        } else if (voxel.role === "rock") {
+          color = new THREE.Color(pick(rng() < 0.55 ? moss : duff)).multiplyScalar(0.88);
+        } else if (voxel.role === "flower" || voxel.role === "mushroom") {
+          color = new THREE.Color(pick(rng() < 0.5 ? sorrel : fern));
         }
         return [p, color];
       });
